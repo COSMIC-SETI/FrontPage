@@ -109,4 +109,3 @@ pkg# gem install --local ./hashpipe-0.6.3.gem -- --with-hashpipe-include=/home/c
 # mount /dev/md126 /mnt/buf0
 # mount /dev/md127 /mnt/buf1
 ```
-
