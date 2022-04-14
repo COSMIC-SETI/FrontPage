@@ -1,0 +1,14 @@
+[Unit]
+Description=Initialisation of the redis server
+After=network.target
+Requires=network.target
+
+[Service]
+Type=simple
+Restart=always
+ExecStart=/bin/bash /usr/local/bin/init_redis_server.sh
+ExecStop=pkill -ef "/usr/local/bin/init_redis_server.sh"
+StartLimitIntervalSec=0
+
+[Install]
+WantedBy=multi-user.target
