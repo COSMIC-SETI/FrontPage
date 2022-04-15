@@ -1,5 +1,7 @@
 Software source and other files cloned/saved to /home/cosmic/src, primarily, /home/cosmic/dev secondarily.
 
+# Computer Setup
+
 ## [Adjust BIOS for HPC](https://hpcadvisorycouncil.atlassian.net/wiki/spaces/HPCWORKS/pages/1280442391/AMD+2nd+Gen+EPYC+CPU+Tuning+Guide+for+InfiniBand+HPC?focusedCommentId=2152333319)
 
 - `APBDIS = 1 [NB Configuration]`
@@ -54,6 +56,20 @@ lspci -nnk | grep -iA2 vga output below with the successful registration of nvid
         Kernel modules: nvidiafb, nouveau, nvidia
 ```
 
+## Format and RAID0 drives
+```
+# mdadm -Cv -l0 -n4 /dev/md126 /dev/nvme{0,1,2,3}n1
+# mdadm -Cv -l0 -n4 /dev/md127 /dev/nvme{4,5,6,7}n1
+# mkfs.xfs /dev/md126
+# mkfs.xfs /dev/md127
+# mkdir /mnt/buf0
+# mkdir /mnt/buf1
+# mount /dev/md126 /mnt/buf0
+# mount /dev/md127 /mnt/buf1
+```
+
+# Software Setup
+
 ## General package install:
 `# apt install automake gfortran numactl ruby-dev linux-tools-$(uname -r) liberfa-dev libhdf5-dev libspdlog-dev package-conf gcc-10 g++-10`
 
@@ -93,19 +109,32 @@ make
 
 ### Clone [rb-hashpipe](https://github.com/david-macmahon/rb-hashpipe)
 ```
-rake package 
+$ rake package 
 # apt install libncurses5-dev
-pkg# gem install --local ./hashpipe-0.6.3.gem -- --with-hashpipe-include=/home/cosmic/dev/hashpipe/src --with-hashpipestatus-lib=/home/cosmic/dev/hashpipe/src/.libs
+# pkg gem install --local ./hashpipe-0.6.3.gem -- --with-hashpipe-include=/home/cosmic/dev/hashpipe/src --with-hashpipestatus-lib=/home/cosmic/dev/hashpipe/src/.libs
 ```
 
-## Format and RAID0 drives
+## Clone [rawspec](https://github.com/UCBerkeleySETI/rawspec)
 ```
-# mdadm -Cv -l0 -n4 /dev/md126 /dev/nvme{0,1,2,3}n1
-# mdadm -Cv -l0 -n4 /dev/md127 /dev/nvme{4,5,6,7}n1
-# mkfs.xfs /dev/md126
-# mkfs.xfs /dev/md127
-# mkdir /mnt/buf0
-# mkdir /mnt/buf1
-# mount /dev/md126 /mnt/buf0
-# mount /dev/md127 /mnt/buf1
+make
+```
+
+Add to /etc/bash.bashrc
+```
+# Rawspec stuff
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:"/home/cosmic/src/rawspec"
+export PATH=${PATH}:/home/cosmic/src/rawspec
+```
+
+## [Julia](https://julialang.org/downloads/) 
+```
+$ cd /home/cosmic/dev
+$ wget https://julialang-s3.julialang.org/bin/linux/x64/1.6/julia-1.6.6-linux-x86_64.tar.gz
+$ tar -xvf ./julia-1.6.6-linux-x86_64.tar.gz
+```
+
+Add to /etc/bash.bashrc
+```
+# Julia stuff
+export PATH=${PATH}:/home/cosmic/dev/julia-1.6.6/bin
 ```
