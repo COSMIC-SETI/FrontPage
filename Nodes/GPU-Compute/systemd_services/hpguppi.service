@@ -1,0 +1,20 @@
+[Unit]
+Description=Initialisation of hashpipe instances 0 and 1.
+#RequiresMountsFor=/opt/mnt /home
+After=network.target
+Requires=network.target
+StartLimitInterval=150
+StartLimitBurst=3
+
+[Service]
+EnvironmentFile=/home/cosmic/dev/hpguppi_daq/hpguppi_service.conf
+Restart=on-failure
+#ExecStartPre=/usr/bin/test -d /opt/mnt/bin
+RestartSec=30
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/bin/init_hpguppi.sh $INSTANCE_SYSTEM_NAME
+ExecStop=pkill -ef "hashpipe -p"
+
+[Install]
+WantedBy=multi-user.target

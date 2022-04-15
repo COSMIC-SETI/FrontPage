@@ -1,0 +1,17 @@
+[Unit]
+Description="Redis Gateway for active Hpguppi_daq Instances"
+After=network.target
+Requires=network.target
+
+[Service]
+Type=simple
+EnvironmentFile=/home/cosmic/dev/hpguppi_daq/redis_gateway_service.conf
+ExecStart=/home/sonata/.rvm/gems/ruby-2.1.10/bin/hashpipe_redis_gateway.rb -s 10.80.100.243 -i 0,1 -f
+Restart=always
+#StartLimitBurst=25
+#RestartSec=1
+#StartLimitIntervalSec=30
+StartLimitIntervalSec=0
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,18 @@
+[Unit]
+Description=Initialisation of hpguppi_pypeline instances 0 and 1.
+After=hpguppi.service
+#Requires=hpguppi.service
+StartLimitInterval=150
+StartLimitBurst=3
+
+[Service]
+Restart=on-failure
+RestartSec=30
+Type=oneshot
+RemainAfterExit=yes
+RuntimeMaxSec=60
+ExecStart=/usr/local/bin/init_hpguppi_pypeline.sh
+ExecStop=pkill -e -f hpguppi_pypeline.py
+
+[Install]
+WantedBy=multi-user.target
