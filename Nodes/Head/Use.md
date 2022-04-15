@@ -2,6 +2,12 @@
 
 Under `cosmic` user, execute the ansible-playbook of choice:
 
+Playbook | Recording Mode Description
+-|-
+voltage_record | GUPPI RAW files, no processing.
+xgpu_record | XGPU correlated UVH5 files.
+beamformer_record | BLADE Beamformed RAW files. *Not tested!!*
+
 ```
 $ sudo su cosmic
 (base) cosmic@cosmic-head:~/dev$ conda activate cosmic_vla
