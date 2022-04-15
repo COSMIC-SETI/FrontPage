@@ -98,7 +98,14 @@ CC=gcc-10 CXX=g++-10 meson build && cd build && ninja test
 
 ### Clone [xGPU](https://github.com/GPU-correlators/xGPU)
 ```
-make NTIME=32768 NTIME_PIPE=128 NPOL=2 NFREQUENCY=512 NSTATION=16 CUDA_ARCH=sm_86 DP4A=yes
+git checkout davidm
+make NTIME=32768 NTIME_PIPE=128 NPOL=2 NFREQUENCY=256 NSTATION=16 CUDA_ARCH=sm_86 DP4A=yes
+```
+
+Add to /etc/bash.bashrc
+```
+# XGPU stuff
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:"/home/cosmic/src/xGPU/src"
 ```
 
 ### Clone [hpguppi](https://github.com/MydonSolutions/hpguppi_daq/tree/seti-ata-8bit)
@@ -137,4 +144,17 @@ Add to /etc/bash.bashrc
 ```
 # Julia stuff
 export PATH=${PATH}:/home/cosmic/dev/julia-1.6.6/bin
+```
+
+## Clone [Rawx.jl](https://w.astro.berkeley.edu/~davidm/Rawx.jl.git)
+
+In julia's package manager
+
+```
+add https://github.com/david-macmahon/XGPU.jl
+add https://github.com/david-macmahon/Blio.jl
+add https://github.com/david-macmahon/RadioInterferometry.jl
+add .
+add YAML
+add EarthOrientation
 ```
