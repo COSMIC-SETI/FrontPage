@@ -1,0 +1,15 @@
+[Unit]
+Description=Initialise the CASPER FPGA REST Server
+After=network.target
+Requires=network.target
+
+[Service]
+EnvironmentFile=/home/cosmic/dev/systemd_services/casperfpga_rest_server.conf
+Type=simple
+Restart=always
+ExecStart=/usr/local/bin/init_casperfpga_rest_server.sh $INITIAL_FPGA_FILEPATH --program
+ExecStop=pkill -ef "/bin/bash /usr/local/bin/init_casperfpga_rest_server.sh"
+StartLimitIntervalSec=0
+
+[Install]
+WantedBy=multi-user.target

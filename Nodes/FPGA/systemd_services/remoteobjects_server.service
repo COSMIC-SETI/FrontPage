@@ -1,0 +1,15 @@
+[Unit]
+Description=Initialise the CASPER FPGA remoteobjects Server
+After=network.target
+Requires=network.target
+
+[Service]
+EnvironmentFile=/home/cosmic/dev/systemd_services/remoteobjects_server.conf
+Type=simple
+Restart=always
+ExecStart=/usr/local/bin/init_remoteobjects_server.sh --fpgfile $INITIAL_FPGA_FILEPATH --program
+ExecStop=pkill -ef "/bin/bash /usr/local/bin/init_remoteobjects_server.sh"
+StartLimitIntervalSec=0
+
+[Install]
+WantedBy=multi-user.target
