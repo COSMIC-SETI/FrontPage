@@ -18,7 +18,7 @@ cosmic-dev1-ipmi| 10.64.79.128 |
 Host (.vla.nrao.edu)|IP|Notes
 -|-|-
 setigw|10.80.100.243/24|Cosmic head node; aka cosmic-head (eno1np0)
-setigw-bmc|??|COSMIC head node IPMI
+setigw-bmc|10.80.100.242/24|COSMIC head node IPMI
 
 
 ### COSMIC “private” 1G domain. 192.168.32.0/24
