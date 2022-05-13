@@ -4,7 +4,7 @@ After=network.target
 Requires=network.target
 
 [Service]
-EnvironmentFile=/home/cosmic/dev/systemd_services/remoteobjects_server.conf
+EnvironmentFile=/home/cosmic/remoteobjects_server.conf
 Type=simple
 Restart=always
 ExecStart=/usr/local/bin/init_remoteobjects_server.sh --fpgfile $INITIAL_FPGA_FILEPATH --program
