@@ -4,7 +4,7 @@ The Redis-Server hosted on the Head-Node is wrapped in the `redis_server` system
 
 ## MCAST MetaData Monitor
 
-The MCAST meta-data of the system is received by the `/home/cosmic/Cosmic_VLA/mcast2redis.py` script, which populates hashes in REDIS. The script is typically running in the `mcast2redis` screen session, under the `cosmic` user. It is started with `(cosmic_vla) cosmic@cosmic-head:~/Cosmic_VLA$ python mcast2redis_hashpipe.py`.
+The MCAST meta-data of the system is received by the (`~cosmic/Cosmic_VLA/Cosmic-VLA-RedisPub/mcast2redis.py`)[https://github.com/COSMIC-SETI/Cosmic-VLA-RedisPub/blob/main/mcast2redis.py] script, which populates hashes in REDIS. The script is typically running in the `mcast2redis` screen session, under the `cosmic` user. It is started with `(cosmic_vla) cosmic@cosmic-head:~/Cosmic_VLA$ python mcast2redis.py`.
 
 The populated hashes of REDIS are displayed in a monitoring dashboard, served on port 8081 of the Head-Node. The dashboard is typically running under the `meta_monitor` screen session, under the `cosmic` user. It is started with `cosmic@cosmic-head:~/dev/vla_metakey_monitor$ node main.js`.
 
@@ -51,11 +51,11 @@ Under the `cosmic` user, `cosmic_vla` conda environment.
 (cosmic_vla) cosmic@cosmic-head:~/dev$
 ```
 
-First configure the FEngines (statically uses `/home/cosmic/dev/observation_control/fengine_control/vla_f_config.yaml`):
+First configure the FEngines (statically uses `~cosmic/dev/COSMIC-VLA-PythonLibs/scripts/vla_f_config.yaml`):
 ```
-python /home/cosmic/dev/observation_control/fengine_control/configure_remotefpga.py
+python ~cosmic/dev/COSMIC-VLA-PythonLibs/scripts/configure_remotefpga.py
 ```
 
-See `configure_remotefpga.py -h` for more info. It automatically publishes the configuration meta-data (NCHAN, NANTS etc) to the appropriate hashpipe instances. To do this manually run `python /home/cosmic/dev/observation_control/fengine_control/feng_meta_marshal.py`.
+See `configure_remotefpga.py -h` for more info. It automatically publishes the configuration meta-data (NCHAN, NANTS etc) to the appropriate hashpipe instances. To do this manually run `python ~cosmic/dev/COSMIC-VLA-PythonLibs/scripts/publishHashpipeIngestMetadata.py`.
 
-Finally, run `python /home/cosmic/dev/observation_control/start_observation.py -i 5 -n 30`, where the former argument is the delay until observation start, and the latter is the observation duration, in seconds.
+Finally, run `python ~cosmic/dev/COSMIC-VLA-PythonLibs/scripts/start_observation.py -i 5 -n 30`, where the former argument is the delay until observation start, and the latter is the observation duration, both in seconds.
