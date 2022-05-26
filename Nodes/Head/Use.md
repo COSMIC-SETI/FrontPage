@@ -53,9 +53,11 @@ Under the `cosmic` user, `cosmic_vla` conda environment.
 
 First configure the FEngines (statically uses `~cosmic/dev/COSMIC-VLA-PythonLibs/scripts/vla_f_config.yaml`):
 ```
-python ~cosmic/dev/COSMIC-VLA-PythonLibs/scripts/configure_remotefpga.py
+python configure_remotefpga.py
 ```
 
-See `configure_remotefpga.py -h` for more info. It automatically publishes the configuration meta-data (NCHAN, NANTS etc) to the appropriate hashpipe instances. To do this manually run `python ~cosmic/dev/COSMIC-VLA-PythonLibs/scripts/publish_hashpipe_ingest_metadata.py`.
+See `configure_remotefpga.py -h` for more info. It automatically publishes the configuration meta-data (NCHAN, NANTS etc) to the appropriate hashpipe instances. To do this manually run `publish_hashpipe_ingest_metadata.py`.
 
-Finally, run `python ~cosmic/dev/COSMIC-VLA-PythonLibs/scripts/start_observation.py -i 5 -n 30`, where the former argument is the delay until observation start, and the latter is the observation duration, both in seconds.
+Finally, run `start_observation.py -i 5 -n 30`, where the former argument is the delay until observation start, and the latter is the observation duration, both in seconds.
+
+If the recording doesn't seem to go to plan, run `publish_hashpipe_ingest_metadata.py` before trying again, to ensure that hashpipe has the correct impression of the received data stream.
