@@ -6,6 +6,7 @@ Welcome to the COSMIC-VLA wiki!
 * [Roadmap planning](https://docs.google.com/document/d/1nDtOfW71EruebsAeaTjjUV2HyhS5Rfpo4atIe5qpj1Y/edit#heading=h.dc9xlo2irlap)
 
 ## Technical memos:
+* [VLASS Search Specs](https://docs.google.com/document/d/1nkqZMf7MsKGVg0uA8HHg7nyPqBiHngm1F1yP_t-DxFc/edit?usp=sharing)
 * [COSMIC weekly meeting minutes](https://docs.google.com/document/d/1n4c8C7agsP-IJm5UEjiFZ4XCRolCnSUMZqB_bs5TNK8/edit?usp=sharing
 ) (limited access)
 * [COSMIC GPU design memo](https://docs.google.com/document/d/1Gsjts7yBKOXvuVtMFjaWW5IVB7knOvnaDZvB71SYYa0/edit)
