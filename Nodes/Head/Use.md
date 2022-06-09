@@ -56,6 +56,6 @@ First configure the FEngines (statically uses `~cosmic/dev/COSMIC-VLA-PythonLibs
 python ~cosmic/dev/COSMIC-VLA-PythonLibs/scripts/configure_remotefpga.py
 ```
 
-See `configure_remotefpga.py -h` for more info. It automatically publishes the configuration meta-data (NCHAN, NANTS etc) to the appropriate hashpipe instances. To do this manually run `python ~cosmic/dev/COSMIC-VLA-PythonLibs/scripts/publishHashpipeIngestMetadata.py`.
+See `configure_remotefpga.py -h` for more info. It automatically publishes the configuration meta-data (NCHAN, NANTS etc) to the appropriate hashpipe instances. To do this manually run `python ~cosmic/dev/COSMIC-VLA-PythonLibs/scripts/publish_hashpipe_ingest_metadata.py`.
 
 Finally, run `python ~cosmic/dev/COSMIC-VLA-PythonLibs/scripts/start_observation.py -i 5 -n 30`, where the former argument is the delay until observation start, and the latter is the observation duration, both in seconds.
