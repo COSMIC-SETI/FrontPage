@@ -26,7 +26,7 @@ beamformer_record | BLADE Beamformed RAW files. *Not tested!!*
 ```
 $ sudo su cosmic
 (base) cosmic@cosmic-head:~/dev$ conda activate cosmic_vla
-(cosmic_vla) cosmic@cosmic-head:~/dev$ ansible-playbook ~cosmic/dev/ATA_ansible_playbooks/hashpipe/voltage_record.yml -K
+(cosmic_vla) cosmic@cosmic-head:~/dev$ ansible-playbook ~cosmic/dev/FrontPage/Nodes/Head/ansible_playbooks/hashpipe/voltage_record.yml -K
 ```
 
 ![cosmic_head Starting Hashpipe](./images/cosmic_head_start_hashpipe.png)
