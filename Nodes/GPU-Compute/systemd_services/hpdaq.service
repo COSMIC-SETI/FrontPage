@@ -1,0 +1,16 @@
+[Unit]
+Description=Hashpipe instances 0,1
+After=network.target
+Requires=network.target
+
+[Service]
+EnvironmentFile=/home/cosmic/hpdaq_service.conf
+Restart=on-failure
+StartLimitIntervalSec=0
+Type=forking
+ExecStart=/home/cosmic/dev/hpguppi_daq/src/init_hpguppi.py $INSTANCE_SYSTEM_NAME 0,1 --configfile /home/cosmic/dev/hpguppi_daq/src/config_hpguppi.yml
+StandardOutput=append:/var/log/init_hpguppi.log
+StandardError=append:/var/log/init_hpguppi.log
+
+[Install]
+WantedBy=multi-user.target

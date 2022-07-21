@@ -5,17 +5,14 @@ then
   echo "Please run with super-user privileges"
   exit 1
 else
-	cp ./hpguppi*.service /etc/systemd/system/
+	cp ./hpdaq*.service /etc/systemd/system/
 	cp ./redis_gateway.service /etc/systemd/system/
-	cp ./init_hpguppi*.sh /usr/local/bin/
-	cp ./hpguppi_service.conf /home/cosmic/dev/hpguppi_daq
-	cp ./redis_gateway_service.conf /home/cosmic/dev/hpguppi_daq
+	cp ./hpdaq_service.conf /home/cosmic
+	cp ./redis_gateway_service.conf /home/cosmic
 
-	systemctl disable hpguppi
-	systemctl disable hpguppi_pypeline
+	systemctl disable hpdaq
 	systemctl disable redis_gateway
 	systemctl daemon-reload
-	systemctl enable hpguppi
-	systemctl enable hpguppi_pypeline
+	systemctl enable hpdaq
 	systemctl enable redis_gateway
 fi
