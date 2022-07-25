@@ -24,7 +24,9 @@ cosmic-head-bmc|10.80.253.242/24|COSMIC head node IPMI
 ### COSMIC “private” 1G domain. 192.168.32.0/23
 
 Number of hosts anticipated: 1 x headnode + 128 x Compute + "a few" storage / axiliary
+
 Number of IPMI hosts anticipated: 1 x headnode + 128 x Compute + "a few" storage / axiliary
+
 Total: 256 + "a few"
 
 
