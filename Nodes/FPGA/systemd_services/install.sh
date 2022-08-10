@@ -6,7 +6,6 @@ then
   exit 1
 else
 
-	cp ./init_remoteobjects_server.sh /usr/local/bin/
 	cp ./remoteobjects_server.service /etc/systemd/system/
 	cp ./remoteobjects_server.conf /home/cosmic
 

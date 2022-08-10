@@ -1,15 +1,15 @@
 [Unit]
-Description=Initialise the CASPER FPGA remoteobjects Server
+Description=The CASPER-FPGA remoteobjects Server
 After=network.target
 Requires=network.target
 
 [Service]
 EnvironmentFile=/home/cosmic/remoteobjects_server.conf
-Type=simple
 Restart=always
-ExecStart=/usr/local/bin/init_remoteobjects_server.sh --fpgfile $INITIAL_FPGA_FILEPATH --program
-ExecStop=pkill -ef "/bin/bash /usr/local/bin/init_remoteobjects_server.sh"
-StartLimitIntervalSec=0
+Type=simple
+ExecStart=/home/cosmic/py3-venv/bin/rest_serve_remoteobjects.py --fpgfile $INITIAL_FPGA_FILEPATH --program
+StandardOutput=append:/home/cosmic/logs/remoteobjects_server.out
+StandardError=append:/home/cosmic/logs/remoteobjects_server.err
 
 [Install]
 WantedBy=multi-user.target
