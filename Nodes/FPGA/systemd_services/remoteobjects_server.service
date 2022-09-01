@@ -3,6 +3,9 @@ Description=The CASPER-FPGA remoteobjects Server
 After=network.target
 Requires=network.target
 
+[Timer]
+OnBootSec=1min
+
 [Service]
 EnvironmentFile=/home/cosmic/remoteobjects_server.conf
 Restart=always
