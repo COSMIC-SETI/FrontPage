@@ -45,18 +45,14 @@ As is evident from the playbook printout, hashpipe is compiled and the systemd s
 
 # Configuration of the array's FEngines
 
-First configure the FEngines (defaultly uses `~cosmic/dev/COSMIC-VLA-PythonLibs/scripts/vla_f_config.yaml` but one can specify a different configuration file with `--config-file`):
+First configure the FEngines, specifying a configuration file):
 ```
-~cosmic/dev/COSMIC-VLA-PythonLibs/scripts$ python ./configure_remotefpga.py
+~cosmic/dev/COSMIC-VLA-PythonLibs/scripts$ python ./configure_remotefpga.py ./config_yaml/fen_dual_antenna_fullband.yaml
 ```
-
-**NOTE THAT THIS MUST BE RUN FROM THE `~cosmic/dev/COSMIC-VLA-PythonLibs/scripts` DIRECTORY!**
 
 While the yaml file's contents are fairly static, one may wish to adjust the `antenna` and `chan_range` entries.
 The `antenna` entry is an indented, bullet-point style list of the antenna names to configure.
 The `chan_range` entry is a `[start, stop]` statement of the channel range to send to the encapsulating destination structure.
-
-Configuration automatically publishes the configuration meta-data (NCHAN, NANTS etc) to the appropriate hashpipe instances. To do this manually (say if the instances are restarted but the FEngines are not reconfigured) run `publish_hashpipe_ingest_metadata.py`.
 
 # Recording data with Hashpipe on the GPU Node(s)
 
@@ -73,5 +69,3 @@ Option | Description
 # Troubleshooting
 
 If it appears that the hashpipe backends are non-operational (DAQPULSE is stale, or the IBVGBPS doesn't match the expected GB/s), [restart them](#Starting_up_Hashpipe_on_th_GPU_Node(s)).
-
-If the recording doesn't seem to go to plan, run `publish_hashpipe_ingest_metadata.py` before trying again, to ensure that hashpipe has the correct impression of the received data stream.
