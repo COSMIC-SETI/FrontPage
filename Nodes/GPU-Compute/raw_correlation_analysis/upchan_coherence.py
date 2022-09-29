@@ -23,7 +23,6 @@ from sliding_rfi_flagger import flag_rfi
 # matplotlib.use('Tkagg')
 
 def main(args):
-    
     tbeg = time.time()
 
     # Collecting the data from the guppi raw files and
@@ -57,6 +56,15 @@ def main(args):
         print(f"Warning: Given intg_time > duration of the file: {round(n_blocks*ntsamp_block*del_t)} s, Using maximum time duration of the file")
         n_blocks_read = n_blocks
 
+    band_percentage = float(args.band)
+    bandcenter_percentage = float(args.band_center)
+    assert band_percentage > 0.0 and band_percentage <= 1.0
+
+    band_bottom = bandcenter_percentage - (0.5 * band_percentage) # center case, default
+    band_top = bandcenter_percentage + (0.5 * band_percentage) # center case, default
+    assert band_bottom > 0.0 and band_bottom <= 1.0
+    assert band_top > 0.0 and band_top <= 1.0
+
     print("The header info for the file: ")
     print(header)
     print(f"Nblocks: {n_blocks},  Number of blocks to read: {n_blocks_read}")
@@ -69,91 +77,103 @@ def main(args):
         head_block, data_block = gob.read_next_data_block()
         data[:,:, i*ntsamp_block:(i+1)*ntsamp_block, :] = data_block.reshape(nant, nchan, ntsamp_block, npols)
 
+    # Upchannelize the data
+    print("Starting upchannelization part")
+
+    nfine = args.lfft # Number of fine channels per coarse channel
+    nchan_fine = nchan*nfine
+    
+    # trim time to be a multiple of FFT size
+    ntime_total = data.shape[2]
+    ntime_total -= ntime_total % args.lfft
+    data = data[:, :, 0:ntime_total, :]
+
+    freq_range = freq_end - freq_start
+    freq_end = freq_start + freq_range*band_top
+    freq_start = freq_start + freq_range*band_bottom
+
+    # Time, frequency resolution and number of time samples after FFT
+    del_t = del_t*nfine
+    ntsampfine = int(data.shape[2]/nfine)
+    del_f = del_f/nfine
+
+
+    # Reshaping the data for FFT
+    print(f"Reshaping the data for FFT from {data.shape}")
+    # reshape to [A,C,Tfine,Tfft,P]
+    data = data.reshape(nant, nchan, ntsampfine, nfine, npols)
+    
+    ## trim channel to minimum:
+    # transpose to [A,Tfine,C,Tfft,P]
+    data = np.transpose(data, axes=(0,2,1,3,4))
+    # reshape to [A,Tfine,C*Tfft,P]
+    data = data.reshape(nant, ntsampfine, nchan_fine, npols)
+    # select band
+    band_lower = int(nchan_fine*band_bottom)
+    band_upper = int(nchan_fine*band_top + 0.5)
+    band_length = band_upper-band_lower
+    ncoarse_chan_required = int(np.ceil(band_length/nfine))
+    band_upper_padding = ncoarse_chan_required*nfine - band_length
+    print(f"Selecting [{band_bottom}, {band_top}] of the channels data, range [{band_lower}, {band_upper}).")
+    data = data[:, :, band_lower:band_upper+band_upper_padding, :]
+    # reshape to [A, Tfine, C, Tfft, P]
+    data = data.reshape(nant, ntsampfine, ncoarse_chan_required, nfine, npols)
+
+    print(f"FFT of the data ({data.shape} along axis 3)")
+    t0 = time.time()
+    data = np.fft.fft(data, axis = 3)
+    data = np.fft.fftshift(data, axes = 3)
+    t1 = time.time()
+    print(f"FFT done, took {t1-t0} s")
+
+    print(f"The channelized datashape [A, Tfine, C, Cfine, P]: {data.shape}")
+    data = data.reshape(nant, ntsampfine, ncoarse_chan_required*nfine, npols)
+    data = data[:, :, 0:-band_upper_padding, :] # discard extra data
+    print(f"The channelized datashape collapsed and filtered [A, Tfine, Cfine, P]: {data.shape}")
+    
+
+    print(f"The used datashape: {data.shape}")
+    nchan = data.shape[2]
+
     #Seperating out the data from two antennas into a different array and changing their order
     for ant1 in range(0, nant):
         for ant2 in range(ant1+1, nant):
-            plot_func(
-                np.transpose(data[ant1,...], axes = (1,0,2)),
-                np.transpose(data[ant2,...], axes = (1,0,2)),
+            analyse(
+                data[ant1,...],
+                data[ant2,...],
                 args,
                 [ants[ant1], ants[ant2]],
-                npols,
-                nchan,
                 del_t,
                 del_f,
                 freq_start,
-                freq_end,
+                freq_end
             )
     
     tend = time.time()
     print(f"Total processing time: {(tend-tbeg)/60.0} min")
 
-def plot_func(
-    data1,
-    data2,
+def analyse(
+    data1, # [Time, Chan, Pol]
+    data2, # [Time, Chan, Pol]
     args,
     ants,
-    npols,
-    nchan,
     del_t,
     del_f,
     freq_start,
-    freq_end
+    freq_end,
 ):
-    print(f"The data shape of single antenna data: {data1.shape}")
-
-    #Upchannelization part
-    print("Starting upchannelization part")
-
-    nfine = args.lfft # Number of fine channels per coarse channel
-
-    # nfine has to be a factor of the total time samples
-    ## so trim it
-    ntime_total = data1.shape[0]
-    ntime_total -= ntime_total % nfine
-    data1 = data1[0:ntime_total, ...]
-    data2 = data2[0:ntime_total, ...]
-
-    check =  data1.shape[0] % nfine
-    if  check != 0:
-        sys.exit(f"The total time samples {data1.shape[0]} should be divisible by number of fine channels {nfine}")
-
-
-    # Time, frequency resolution and number of time samples after FFT
-    del_t_new = del_t*nfine
-    ntsamp_new = int(data1.shape[0]/nfine)
-    del_f_new = del_f/nfine
-    freq_new = np.arange(freq_start, freq_end, del_f_new) #New Upchannelized frequency channels
-
-    # Reshaping the data for FFT
-    print("Reshaping the data for FFT")
-    chan_dat1 = data1.reshape(int(data1.shape[0]/nfine), nfine, nchan, npols)
-    chan_dat2 = data2.reshape(int(data2.shape[0]/nfine), nfine, nchan, npols)
-
-
-    # Conduct the FFT of the data and an fftshift after that
-    print("FFT of the data from each antenna,this might take a while (~3 min))")
-
-    t0 = time.time()
-    chan_dat1 = np.fft.fft(chan_dat1, axis = 1) 
-    chan_dat1 = np.fft.fftshift(chan_dat1, axes = 1)
-
-    chan_dat2 = np.fft.fft(chan_dat2, axis = 1) 
-    chan_dat2 = np.fft.fftshift(chan_dat2, axes = 1)
+    nchan = data1.shape[1]
+    npol = data1.shape[2]
+    freq = np.linspace(freq_start, freq_end, nchan) #New Upchannelized frequency channels
     t1 = time.time()
-    print(f"FFT done, took {t1-t0} s")
-    
-
-    print(f"The channelized datashape: {chan_dat1.shape}")
-
     print("Calculating auto and crosscorrelation")
 
     #autocorrelation part
-    autocorr1 = chan_dat1*np.conjugate(chan_dat1) # antenna1
-    autocorr2 = chan_dat2*np.conjugate(chan_dat2) # antenna2
+    autocorr1 = data1*np.conjugate(data1) # antenna1
+    autocorr2 = data2*np.conjugate(data2) # antenna2
 
     # Cross correlation part
-    cross_corr = chan_dat1*np.conjugate(chan_dat2) # First antenna data times the conjugate of the second antenna
+    cross_corr = data1*np.conjugate(data2) # First antenna data times the conjugate of the second antenna
 
     t2 = time.time() 
     print(f"Correlation done in {t2-t1} s")
@@ -161,97 +181,90 @@ def plot_func(
 
     print(f"Averaging data")    
 
-    # # Average spectra across specified time intervals
-    # mean_autocorr_spec1 = np.mean(autocorr1, axis = 0) #antenna 1 autocorrelation
-    # mean_autocorr_spec2 = np.mean(autocorr2, axis = 0) #antenna 2 autocorrelation
+    # Average spectra across specified time intervals
+    mean_autocorr_spec1 = np.mean(autocorr1, axis = 0) #antenna 1 autocorrelation
+    mean_autocorr_spec2 = np.mean(autocorr2, axis = 0) #antenna 2 autocorrelation
+    mean_autocorr_spec1_pol0 = mean_autocorr_spec1[...,0].flatten()
+    mean_autocorr_spec1_pol1 = mean_autocorr_spec1[...,1].flatten()
+    mean_autocorr_spec2_pol0 = mean_autocorr_spec2[...,0].flatten()
+    mean_autocorr_spec2_pol1 = mean_autocorr_spec2[...,1].flatten()
 
     mean_crosscorr_spec = np.mean(cross_corr, axis = 0) # Cross correlations
-
-    #mid freq range
-    band_percentage = float(args.band)
-    bandcenter_percentage = float(args.band_center)
-    assert band_percentage > 0.0 and band_percentage <= 1.0
-
-    band_bottom = bandcenter_percentage - (0.5 * band_percentage) # center case, default
-    band_top = bandcenter_percentage + (0.5 * band_percentage) # center case, default
-    assert band_bottom > 0.0 and band_bottom <= 1.0
-    assert band_top > 0.0 and band_top <= 1.0
-    midi = int(band_bottom*nchan*nfine)
-    mide = int(band_top*nchan*nfine + 0.5)
+    t3 = time.time() 
+    print(f"Averaging done in {t3-t2} s")
 
     # #Plotting the phase and amplitude of the autocorrelation for 2 antennas
 
     antpair_str = f"{ants[0]}-{ants[1]}"
-    freqrange_str = f"{freq_new[midi]:0.3f}-{freq_new[mide]:0.3f}"
+    freqrange_str = f"{freq_start:0.3f}-{freq_end:0.3f}"
 
-    # fig, axs = plt.subplots(2, 2, constrained_layout=True, figsize = (10,8))
+    fig, axs = plt.subplots(2, 2, constrained_layout=True, figsize = (10,8))
 
-    # axs[0,0].plot(freq_new, 10*np.log10(np.abs(mean_autocorr_spec1[...,0].flatten(order = 'F'))), label = 'pol 0')
-    # axs[0,0].plot(freq_new, 10*np.log10(np.abs(mean_autocorr_spec1[...,1].flatten(order = 'F'))), label = 'pol 1')
-    # axs[0,0].set_ylabel("Amplitude log scale (a.u.)")
-    # axs[0,0].set_xlabel("Frequency (MHz)")
-    # axs[0,0].set_title(f"Autocorrelation : {ants[0]}")
-    # axs[0,0].legend()
+    axs[0,0].plot(freq_new, 10*np.log10(np.abs(mean_autocorr_spec1_pol0)), label = 'pol 0')
+    axs[0,0].plot(freq_new, 10*np.log10(np.abs(mean_autocorr_spec1_pol1)), label = 'pol 1')
+    axs[0,0].set_ylabel("Amplitude log scale (a.u.)")
+    axs[0,0].set_xlabel("Frequency (MHz)")
+    axs[0,0].set_title(f"Autocorrelation : {ants[0]}")
+    axs[0,0].legend()
 
-    # axs[0,1].plot(freq_new, np.angle(mean_autocorr_spec1[...,0].flatten(order = 'F'), deg = True),  '.', label = 'pol 0')
-    # axs[0,1].plot(freq_new, np.angle(mean_autocorr_spec1[...,1].flatten(order = 'F'), deg = True), '.', label = 'pol 1')
-    # axs[0,1].set_ylabel("Phase (degrees)")
-    # axs[0,1].set_xlabel("Frequency (MHz)")
-    # axs[0,1].set_xlim(freq_new[midi], freq_new[mide])
-    # axs[0,1].set_title(f"Autocorrelation : {ants[0]}")
-    # axs[0,1].legend()
+    axs[0,1].plot(freq_new, np.angle(mean_autocorr_spec1_pol0, deg = True),  '.', label = 'pol 0')
+    axs[0,1].plot(freq_new, np.angle(mean_autocorr_spec1_pol1, deg = True), '.', label = 'pol 1')
+    axs[0,1].set_ylabel("Phase (degrees)")
+    axs[0,1].set_xlabel("Frequency (MHz)")
+    axs[0,1].set_title(f"Autocorrelation : {ants[0]}")
+    axs[0,1].legend()
 
-    # axs[1,0].plot(freq_new, 10*np.log10(np.abs(mean_autocorr_spec2[...,0].flatten(order = 'F'))), label = 'pol 0')
-    # axs[1,0].plot(freq_new, 10*np.log10(np.abs(mean_autocorr_spec2[...,1].flatten(order = 'F'))), label = 'pol 1')
-    # axs[1,0].set_ylabel("Amplitude log scale (a.u.)")
-    # axs[1,0].set_xlabel("Frequency (MHz)")
-    # axs[1,0].set_title(f"Autocorrelation : {ants[1]}")
-    # axs[1,0].legend()
+    axs[1,0].plot(freq_new, 10*np.log10(np.abs(mean_autocorr_spec2_pol0)), label = 'pol 0')
+    axs[1,0].plot(freq_new, 10*np.log10(np.abs(mean_autocorr_spec2_pol1)), label = 'pol 1')
+    axs[1,0].set_ylabel("Amplitude log scale (a.u.)")
+    axs[1,0].set_xlabel("Frequency (MHz)")
+    axs[1,0].set_title(f"Autocorrelation : {ants[1]}")
+    axs[1,0].legend()
 
-    # axs[1,1].plot(freq_new, np.angle(mean_autocorr_spec2[...,0].flatten(order = 'F'), deg = True),  '.', label = 'pol 0')
-    # axs[1,1].plot(freq_new, np.angle(mean_autocorr_spec2[...,1].flatten(order = 'F'), deg = True), '.', label = 'pol 1')
-    # axs[1,1].set_ylabel("Phase (degrees)")
-    # axs[1,1].set_xlabel("Frequency (MHz)")
-    # axs[1,1].set_xlim(freq_new[midi], freq_new[mide])
-    # axs[1,1].set_title(f"Autocorrelation : {ants[1]}")
-    # axs[1,1].legend()
+    axs[1,1].plot(freq_new, np.angle(mean_autocorr_spec2_pol0, deg = True),  '.', label = 'pol 0')
+    axs[1,1].plot(freq_new, np.angle(mean_autocorr_spec2_pol1, deg = True), '.', label = 'pol 1')
+    axs[1,1].set_ylabel("Phase (degrees)")
+    axs[1,1].set_xlabel("Frequency (MHz)")
+    axs[1,1].set_title(f"Autocorrelation : {ants[1]}")
+    axs[1,1].legend()
 
-    # fig.suptitle(f"File: {args.dat_file}")
+    fig.suptitle(f"File: {args.dat_file}")
 
-    # if args.plot:
-    #     plt.show()
-    # else:
-    #     plot_filename = f"auto_corr_{os.path.basename(args.dat_file)}_{antpair_str}.png"
-    #     plt.savefig(plot_filename, dpi = 150)
-    #     print(f"Saved {plot_filename}")
-    #     plt.close()
+    if args.plot:
+        plt.show()
+    else:
+        filename = f"auto_corr_{os.path.basename(args.dat_file)}_{antpair_str}_{freqrange_str}.png"
+        plt.savefig(filename, dpi = 150)
+        plt.close()
+        print(f"Saved {filename}")
 
+    
+    mean_crosscorr_pol0 = mean_crosscorr_spec[...,0].flatten()
+    mean_crosscorr_pol1 = mean_crosscorr_spec[...,1].flatten()
 
     #Plotting the phase and amplitude of the cross correlation
 
     fig, axs = plt.subplots(2, 2, constrained_layout=True, figsize = (10,8))
 
-    axs[0,0].plot(freq_new[midi:mide], np.angle(mean_crosscorr_spec[...,0].flatten(order = 'F')[midi:mide], deg = True),  '.', label = 'pol 0')
+    axs[0,0].plot(freq, np.angle(mean_crosscorr_pol0, deg = True),  '.', label = 'pol 0')
     axs[0,0].set_ylabel("Phase (degrees)")
     axs[0,0].set_xlabel("Frequency (MHz)")
-    axs[0,0].set_xlim(freq_new[midi], freq_new[mide])
     axs[0,0].set_title(f"Crosscorrelation : {antpair_str}")
     axs[0,0].legend()
 
-    axs[0,1].plot(freq_new[midi:mide], np.angle(mean_crosscorr_spec[...,1].flatten(order = 'F')[midi:mide], deg = True), '.', label = 'pol 1')
+    axs[0,1].plot(freq, np.angle(mean_crosscorr_pol1, deg = True), '.', label = 'pol 1')
     axs[0,1].set_ylabel("Phase (degrees)")
     axs[0,1].set_xlabel("Frequency (MHz)")
-    axs[0,1].set_xlim(freq_new[midi], freq_new[mide])
     axs[0,1].set_title(f"Crosscorrelation : {antpair_str}")
     axs[0,1].legend()
 
-    axs[1,0].plot(freq_new[midi:mide], 10*np.log10(np.abs(mean_crosscorr_spec[...,0].flatten(order = 'F')[midi:mide])), label = 'pol 0')
+    axs[1,0].plot(freq, 10*np.log10(np.abs(mean_crosscorr_pol0)), label = 'pol 0')
     axs[1,0].set_ylabel("Amplitude (a.u.)")
     axs[1,0].set_xlabel("Frequency (MHz)")
     axs[1,0].set_title(f"Crosscorrelation : {antpair_str}")
     axs[1,0].legend()
 
-    axs[1,1].plot(freq_new[midi:mide], 10*np.log10(np.abs(mean_crosscorr_spec[...,1].flatten(order = 'F')[midi:mide])), label = 'pol 1')
+    axs[1,1].plot(freq, 10*np.log10(np.abs(mean_crosscorr_pol1)), label = 'pol 1')
     axs[1,1].set_ylabel("Amplitude (a.u.)")
     axs[1,1].set_xlabel("Frequency (MHz)")
     axs[1,1].set_title(f"Crosscorrelation : {antpair_str}")
@@ -262,19 +275,14 @@ def plot_func(
     if  args.plot:
         plt.show()
     else:
-        plot_filename = f"cross_corr_{os.path.basename(args.dat_file)}_{antpair_str}_{freqrange_str}.png"
-        plt.savefig(plot_filename, dpi = 150)
-        print(f"Saved {plot_filename}")
+        filename = f"cross_corr_{os.path.basename(args.dat_file)}_{antpair_str}_{freqrange_str}.png"
+        plt.savefig(filename, dpi = 150)
         plt.close()
+        print(f"Saved {filename}")
 
-    
 
     #Conduct an ifft of the crosscorrelated spectra to get the time delay plots
     if  args.time_delay:
-        
-        
-        mean_crosscorr_pol0 = mean_crosscorr_spec[...,0].flatten(order = 'F')[midi:mide]
-        mean_crosscorr_pol1 = mean_crosscorr_spec[...,1].flatten(order = 'F')[midi:mide]
 
         spec_mean_crosscorr_pol0 = np.abs(mean_crosscorr_pol0)
         spec_mean_crosscorr_pol1 = np.abs(mean_crosscorr_pol1)
@@ -284,8 +292,8 @@ def plot_func(
         threshold = 3
         
         #Getting bad channels
-        bad_chan0 = flag_rfi(spec_mean_crosscorr_pol0, int(nfine/6), threshold)
-        bad_chan1 = flag_rfi(spec_mean_crosscorr_pol1, int(nfine/6), threshold)
+        bad_chan0 = flag_rfi(spec_mean_crosscorr_pol0, int(nchan/6), threshold)
+        bad_chan1 = flag_rfi(spec_mean_crosscorr_pol1, int(nchan/6), threshold)
         
         print(bad_chan0.shape[0], bad_chan1.shape[0])
         
@@ -304,7 +312,7 @@ def plot_func(
 
 
         #Defining  total frequency channels and fine channel bandwidths in Hz to get the time lags
-        tlags = np.fft.fftfreq(nchan*nfine,(del_f/nfine)*1e+6)[midi:mide]
+        tlags = np.fft.fftfreq(nchan,del_f*1e+6)
         tlags = np.fft.fftshift(tlags)*1e+9 #Converting the time lag into us
         tmax_pol0 = np.argmax(10*np.log(np.abs(mean_crosscorr_pol0_ifft)))
         tmax_pol1 = np.argmax(10*np.log(np.abs(mean_crosscorr_pol1_ifft)))
@@ -328,35 +336,32 @@ def plot_func(
         if args.plot:
             plt.show()
         else:
-            plot_filename = f"time_delay_{os.path.basename(args.dat_file)}_{antpair_str}_{freqrange_str}.png"
-            plt.savefig(plot_filename, dpi = 150)
-            print(f"Saved {plot_filename}")
+            filename = f"time_delay_{os.path.basename(args.dat_file)}_{antpair_str}_{freqrange_str}.png"
+            plt.savefig(filename, dpi = 150)
             plt.close()
+            print(f"Saved {filename}")
 
 
     #Proceed if needed to track a channel as a function of time
     if args.track:
-
         #Tracking a channel as a function of time
-        chan = int(input("Enter the channel (MHz) to track:"))
-        #chan = np.where((abs(freq_new-chan) < 0.002))[0]
+        chan = int(input(f"Enter the channel (enumeration) to track [0={freq_start}, {nchan}={freq_end}]:"))
+        #chan = np.where((abs(freq-chan) < 0.002))[0]
         #if len(chan) == 0:
         #   sys.exit("No such channel exist, cannot track")
         #print(chan)
-        cs = int(chan/nfine)
-        fn = int(chan % nfine)
     
         fig, (ax0, ax1) = plt.subplots(1, 2, constrained_layout=True, figsize = (10,8))
         
-        ax0.plot(np.angle(cross_corr[:,fn,cs,0] ,deg = True), '.', label = 'pol 0')
+        ax0.plot(np.angle(cross_corr[:,chan,0] ,deg = True), '.', label = 'pol 0')
         ax0.set_ylabel("Phase (degrees)")
-        ax0.set_xlabel(f"Time samples (delta t = {del_t_new} s)")
+        ax0.set_xlabel(f"Time samples (delta t = {del_t} s)")
         ax0.set_title(f"Crosscorrelation : {antpair_str}")
         ax0.legend()
 
-        ax1.plot(np.angle(cross_corr[:,fn,cs,1] ,deg = True), '.', label = 'pol 1')
+        ax1.plot(np.angle(cross_corr[:,chan,1] ,deg = True), '.', label = 'pol 1')
         ax1.set_ylabel("Phase (degrees)")
-        ax1.set_xlabel(f"Time samples (delta t = {del_t_new} s)")
+        ax1.set_xlabel(f"Time samples (delta t = {del_t} s)")
         ax1.set_title(f"Crosscorrelation : {antpair_str}")
         ax1.legend()
        
@@ -365,9 +370,7 @@ def plot_func(
         if args.plot:
             plt.show()
         else:
-            plot_filename = f"chan_trac_{os.path.basename(args.dat_file)}_{antpair_str}_{freqrange_str}.png"
-            plt.savefig(plot_filename, dpi = 150)
-            print(f"Saved {plot_filename}")
+            plt.savefig(f"chan_trac_{os.path.basename(args.dat_file)}_{antpair_str}.png", dpi = 150)
             plt.close()
 
 
@@ -378,9 +381,9 @@ if __name__ == '__main__':
         description='Reads guppi rawfiles, upchannelize, conducts auto and crosscorrelation',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-d','--dat_file', type = str, required = True, help = 'GUPPI raw file to read in')
-    parser.add_argument('-f','--lfft', type = int, required = True, default = 120,  help = 'Length of FFT, default:120')
     parser.add_argument('-b','--band', type = float, required = False, default = 1.0,  help = 'Bandwidth to plot specified as a decimal percentage [0.0, 1.0], default:1.0')
     parser.add_argument('-bc','--band-center', type = float, required = False, default = 1.0,  help = 'Bandwidth center to plot specified as a decimal percentage [0.0, 1.0]-`band`, default:0.5')
+    parser.add_argument('-f','--lfft', type = int, required = True, default = 120,  help = 'Length of FFT, default:120')
     parser.add_argument('-i', '--tint', type = float, required = True, help = 'Time to integrate in (s), default: whole file duration')
     parser.add_argument('-td', '--time_delay', action = 'store_true', help = 'If there are fringes, plot/save the time delay plot. An RFI filtering is conductted before the IFFT')
     parser.add_argument('-p', '--plot', action = 'store_true', help = 'plot the figures, otherwise save figures to working directory')
