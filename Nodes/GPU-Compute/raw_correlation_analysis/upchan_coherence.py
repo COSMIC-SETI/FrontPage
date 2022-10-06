@@ -20,7 +20,7 @@ from matplotlib import pyplot as plt
 import argparse
 from sliding_rfi_flagger import flag_rfi
 
-# matplotlib.use('Tkagg')
+matplotlib.use('Tkagg')
 
 def main(args):
     tbeg = time.time()
@@ -47,10 +47,14 @@ def main(args):
     freq = np.arange(freq_start, freq_end, del_f) #Coarse channels
     blocksize = header['BLOCSIZE']
     ntsamp_block = int(blocksize/(nant_chans*npols*2*(nbits/8))) # Number of time samples in the block
+    print("Number of time samples per block: %d" % ntsamp_block)
+    print("del_t %f usec" % (del_t*1e6))
+    EXTRA_TIMES = 2*abs(args.time_offset)
     ants = header['ANTNMS00']
+    print("Antennas: %s" % ants)
     ants = ants.split(',')
     ntsamp_tot = args.tint/del_t #Total number of coarse time samples in the integration time.
-    n_blocks_read = int(ntsamp_tot/ntsamp_block) # Number of blocks to read
+    n_blocks_read = int((ntsamp_tot + EXTRA_TIMES)/ntsamp_block) # Number of blocks to read
     
     if  n_blocks_read > n_blocks:
         print(f"Warning: Given intg_time > duration of the file: {round(n_blocks*ntsamp_block*del_t)} s, Using maximum time duration of the file")
@@ -62,30 +66,57 @@ def main(args):
 
     band_bottom = bandcenter_percentage - (0.5 * band_percentage) # center case, default
     band_top = bandcenter_percentage + (0.5 * band_percentage) # center case, default
-    assert band_bottom > 0.0 and band_bottom <= 1.0
-    assert band_top > 0.0 and band_top <= 1.0
+    assert band_bottom >= 0.0 and band_bottom <= 1.0
+    assert band_top >= 0.0 and band_top <= 1.0
 
     print("The header info for the file: ")
     print(header)
     print(f"Nblocks: {n_blocks},  Number of blocks to read: {n_blocks_read}")
    
+    nfine = args.lfft # Number of fine channels per coarse channel
+    # select band
+    band_lower = int(band_bottom * nchan)
+    band_upper = int(band_top * nchan)
+    print("band_lower:", band_lower)
+    print("band_upper:", band_upper)
+    ncoarse_chan_required = max(1, band_upper - band_lower)
+    nchan_fine = ncoarse_chan_required*nfine
+    print(f"Selecting [{band_bottom}, {band_top}] of the channels data, range [{band_lower}, {band_upper}).")
+    #data = data[:, :, band_lower:band_upper+band_upper_padding, :]
 
     # Collecting data from each block into a big array
-    data = np.zeros((nant, nchan, int(ntsamp_block*n_blocks_read), npols), dtype = 'complex64')
+    data = np.zeros((nant, ncoarse_chan_required, int(ntsamp_block*n_blocks_read), npols), dtype = 'complex64')
     print("Started collecting data")
     for i in tq.tqdm(range(n_blocks_read)):
         head_block, data_block = gob.read_next_data_block()
-        data[:,:, i*ntsamp_block:(i+1)*ntsamp_block, :] = data_block.reshape(nant, nchan, ntsamp_block, npols)
+        data[:,0:ncoarse_chan_required, i*ntsamp_block:(i+1)*ntsamp_block, :] = data_block.reshape(nant, nchan, ntsamp_block, npols)[:, band_lower:band_lower+ncoarse_chan_required, :, :]
 
     # Upchannelize the data
     print("Starting upchannelization part")
 
-    nfine = args.lfft # Number of fine channels per coarse channel
-    nchan_fine = nchan*nfine
     
     # trim time to be a multiple of FFT size
-    ntime_total = data.shape[2]
+    ntime_total = data.shape[2] - EXTRA_TIMES
     ntime_total -= ntime_total % args.lfft
+
+    # Shift different antennas in time. Ant order is 11,25,5,6,27
+    def shift(d, tlen, shift):
+        rv = d[:,shift:tlen+shift, :]
+        return rv
+
+    if args.time_offset < 0:
+        offset0 = 0
+        offsetn = -args.time_offset
+    else:
+        offset0 = args.time_offset
+        offsetn = 0
+    print("Offset of ant0: %d; Offset of other ants: %d" % (offset0, offsetn))
+    data[0, :, 0:ntime_total, :] = shift(data[0], ntime_total, offset0) # 11
+    data[1, :, 0:ntime_total, :] = shift(data[1], ntime_total, offsetn) # 25
+    data[2, :, 0:ntime_total, :] = shift(data[2], ntime_total, offsetn) # 5
+    data[3, :, 0:ntime_total, :] = shift(data[3], ntime_total, offsetn) # 6
+    data[4, :, 0:ntime_total, :] = shift(data[4], ntime_total, offsetn) # 27
+
     data = data[:, :, 0:ntime_total, :]
 
     freq_range = freq_end - freq_start
@@ -101,21 +132,13 @@ def main(args):
     # Reshaping the data for FFT
     print(f"Reshaping the data for FFT from {data.shape}")
     # reshape to [A,C,Tfine,Tfft,P]
-    data = data.reshape(nant, nchan, ntsampfine, nfine, npols)
+    data = data.reshape(nant, ncoarse_chan_required, ntsampfine, nfine, npols)
     
     ## trim channel to minimum:
     # transpose to [A,Tfine,C,Tfft,P]
     data = np.transpose(data, axes=(0,2,1,3,4))
     # reshape to [A,Tfine,C*Tfft,P]
     data = data.reshape(nant, ntsampfine, nchan_fine, npols)
-    # select band
-    band_lower = int(nchan_fine*band_bottom)
-    band_upper = int(nchan_fine*band_top + 0.5)
-    band_length = band_upper-band_lower
-    ncoarse_chan_required = int(np.ceil(band_length/nfine))
-    band_upper_padding = ncoarse_chan_required*nfine - band_length
-    print(f"Selecting [{band_bottom}, {band_top}] of the channels data, range [{band_lower}, {band_upper}).")
-    data = data[:, :, band_lower:band_upper+band_upper_padding, :]
     # reshape to [A, Tfine, C, Tfft, P]
     data = data.reshape(nant, ntsampfine, ncoarse_chan_required, nfine, npols)
 
@@ -128,7 +151,7 @@ def main(args):
 
     print(f"The channelized datashape [A, Tfine, C, Cfine, P]: {data.shape}")
     data = data.reshape(nant, ntsampfine, ncoarse_chan_required*nfine, npols)
-    data = data[:, :, 0:-band_upper_padding, :] # discard extra data
+    #data = data[:, :, 0:-band_upper_padding, :] # discard extra data
     print(f"The channelized datashape collapsed and filtered [A, Tfine, Cfine, P]: {data.shape}")
     
 
@@ -166,7 +189,7 @@ def analyse(
     npol = data1.shape[2]
     freq = np.linspace(freq_start, freq_end, nchan) #New Upchannelized frequency channels
     t1 = time.time()
-    print("Calculating auto and crosscorrelation")
+    #print("Calculating auto and crosscorrelation")
 
     #autocorrelation part
     autocorr1 = data1*np.conjugate(data1) # antenna1
@@ -176,10 +199,10 @@ def analyse(
     cross_corr = data1*np.conjugate(data2) # First antenna data times the conjugate of the second antenna
 
     t2 = time.time() 
-    print(f"Correlation done in {t2-t1} s")
+    #print(f"Correlation done in {t2-t1} s")
 
 
-    print(f"Averaging data")    
+    #print(f"Averaging data")    
 
     # Average spectra across specified time intervals
     mean_autocorr_spec1 = np.mean(autocorr1, axis = 0) #antenna 1 autocorrelation
@@ -191,7 +214,7 @@ def analyse(
 
     mean_crosscorr_spec = np.mean(cross_corr, axis = 0) # Cross correlations
     t3 = time.time() 
-    print(f"Averaging done in {t3-t2} s")
+    #print(f"Averaging done in {t3-t2} s")
 
     # #Plotting the phase and amplitude of the autocorrelation for 2 antennas
 
@@ -388,6 +411,7 @@ if __name__ == '__main__':
     parser.add_argument('-td', '--time_delay', action = 'store_true', help = 'If there are fringes, plot/save the time delay plot. An RFI filtering is conductted before the IFFT')
     parser.add_argument('-p', '--plot', action = 'store_true', help = 'plot the figures, otherwise save figures to working directory')
     parser.add_argument('-t', '--track', action = 'store_true', help = 'Track a channel as a function of time, need to enter a RFI free channel after inspection')
+    parser.add_argument('-to', '--time_offset', type = int, help = 'Offset, in time samples, to apply to first antenna', default=0)
 
     args = parser.parse_args()
 
