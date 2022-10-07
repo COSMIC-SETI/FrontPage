@@ -238,9 +238,12 @@ def analyse(
         plt.close()
         print(f"Saved {filename}")
 
-    
+    sqrt_autos_pol0 = np.sqrt(mean_autocorr_spec1_pol0*mean_autocorr_spec2_pol0)
+    sqrt_autos_pol1 = np.sqrt(mean_autocorr_spec1_pol1*mean_autocorr_spec2_pol1)
     mean_crosscorr_pol0 = mean_crosscorr_spec[...,0].flatten()
+    mean_crosscorr_pol0_coeff = mean_crosscorr_pol0/sqrt_autos_pol0
     mean_crosscorr_pol1 = mean_crosscorr_spec[...,1].flatten()
+    mean_crosscorr_pol1_coeff = mean_crosscorr_pol1/sqrt_autos_pol1
 
     #Plotting the phase and amplitude of the cross correlation
 
@@ -258,16 +261,18 @@ def analyse(
     axs[0,1].set_title(f"Crosscorrelation : {antpair_str}")
     axs[0,1].legend()
 
-    axs[1,0].plot(freq, 10*np.log10(np.abs(mean_crosscorr_pol0)), label = 'pol 0')
-    axs[1,0].set_ylabel("Amplitude (a.u.)")
+    # axs[1,0].plot(freq, 10*np.log10(np.abs(mean_crosscorr_pol0)), label = 'pol 0')
+    axs[1,0].plot(freq, 10*np.log10(np.abs(mean_crosscorr_pol0_coeff)), label = 'pol 0')
+    axs[1,0].set_ylabel("Amplitude (dB)")
     axs[1,0].set_xlabel("Frequency (MHz)")
-    axs[1,0].set_title(f"Crosscorrelation : {antpair_str}")
+    axs[1,0].set_title(f"Crosscorrelation Coefficient: {antpair_str}")
     axs[1,0].legend()
 
-    axs[1,1].plot(freq, 10*np.log10(np.abs(mean_crosscorr_pol1)), label = 'pol 1')
-    axs[1,1].set_ylabel("Amplitude (a.u.)")
+    # axs[1,1].plot(freq, 10*np.log10(np.abs(mean_crosscorr_pol1)), label = 'pol 1')
+    axs[1,1].plot(freq, 10*np.log10(np.abs(mean_crosscorr_pol1_coeff)), label = 'pol 1')
+    axs[1,1].set_ylabel("Amplitude (dB)")
     axs[1,1].set_xlabel("Frequency (MHz)")
-    axs[1,1].set_title(f"Crosscorrelation : {antpair_str}")
+    axs[1,1].set_title(f"Crosscorrelation Coefficient: {antpair_str}")
     axs[1,1].legend()
     
     fig.suptitle(f"File: {args.dat_file}")
