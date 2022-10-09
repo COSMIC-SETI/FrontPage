@@ -128,7 +128,8 @@ def main(args):
 
     print(f"The channelized datashape [A, Tfine, C, Cfine, P]: {data.shape}")
     data = data.reshape(nant, ntsampfine, ncoarse_chan_required*nfine, npols)
-    data = data[:, :, 0:-band_upper_padding, :] # discard extra data
+    if band_upper_padding > 0:
+        data = data[:, :, 0:-band_upper_padding, :] # discard extra data
     print(f"The channelized datashape collapsed and filtered [A, Tfine, Cfine, P]: {data.shape}")
     
 
