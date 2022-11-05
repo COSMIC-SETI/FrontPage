@@ -23,8 +23,6 @@ from sliding_rfi_flagger import flag_rfi
 # matplotlib.use('Tkagg')
 
 def main(args):
-    tbeg = time.time()
-
     # Collecting the data from the guppi raw files and
     # saving them to an array
 
@@ -137,6 +135,7 @@ def main(args):
     freq_axis = np.linspace(freq_start, freq_end, nchan) #New Upchannelized frequency channels
 
     source_file_name = os.path.basename(args.dat_file)
+    plot_id = f"{source_file_name}_{freq_axis[0]:0.3f}-{freq_axis[-1]:0.3f}"
 
     autocorr_mean_dict = {
         ants[ant1]: np.mean(data[ant1,...]*np.conjugate(data[ant1,...]), axis = 0, keepdims=False)
@@ -145,40 +144,60 @@ def main(args):
     plot_autocorrelations(
         autocorr_mean_dict, # {ant_name: [Chan, Pol]}
         freq_axis,
-        source_file_name = source_file_name,
+        plot_id = plot_id,
         plot_not_savefig = args.plot,
     )
+
+    if args.track:
+        track_chan = int(input(f"Enter the channel (enumeration) to track [0={freq_axis[0]}, {nchan}={freq_axis[1]}]:"))
+        #chan = np.where((abs(freq-chan) < 0.002))[0]
+        #if len(chan) == 0:
+        #   sys.exit("No such channel exist, cannot track")
+        #print(chan)
 
     #Seperating out the data from two antennas into a different array and changing their order
     for ant1 in range(0, nant):
         for ant2 in range(ant1+1, nant):
-            analyse(
+            baseline_str = f"{ants[ant1]}-{ants[ant2]}"
+            crosscorr = data[ant1,...]*np.conjugate(data[ant2,...])
+            crosscorr_mean = np.mean(crosscorr, axis = 0, keepdims=False) # Cross correlations
+
+            plot_crosscorrelations(
                 autocorr_mean_dict[ants[ant1]],
                 autocorr_mean_dict[ants[ant2]],
-                data[ant1,...]*np.conjugate(data[ant2,...]), # cross_corr
-                [ants[ant1], ants[ant2]],
-                del_t,
-                del_f,
+                crosscorr_mean,
+                baseline_str,
                 freq_axis,
-                source_file_name = source_file_name,
-                plot_not_savefig = args.plot,
-                measure_time_delay = args.time_delay,
-                interactively_assess_channel = args.track
+                plot_id,
+                plot_not_savefig = args.plot
             )
-    
-    tend = time.time()
-    print(f"Total processing time: {(tend-tbeg)/60.0} min")
 
-    if args.plot:
-        return
-    plot_file_collection_id = f"{source_file_name}_{freq_axis[0]:0.3f}-{freq_axis[-1]:0.3f}"
-    print(f"Plotted files for collection: *{plot_file_collection_id}*")
-    return plot_file_collection_id
+            if args.time_delay:
+                baseline_time_delays = plot_time_delay(
+                    crosscorr_mean, # [Chan, Pol]
+                    baseline_str,
+                    del_f,
+                    plot_id,
+                    plot_not_savefig = args.plot,
+                )
+                print(f"Time delay for {baseline_str}: {baseline_time_delays} (ns)")
+
+            if args.track:
+                plot_crosscorrelation_time(
+                    crosscorr[:,track_chan,:], # [Time, Pol]
+                    baseline_str,
+                    del_t,
+                    plot_id,
+                    plot_not_savefig = args.plot
+                )
+
+    print(f"Plotted: {plot_id}")
+
 
 def plot_autocorrelations(
     autocorr_mean_dict, # {ant_name: [Chan, Pol]}
     freq_axis,
-    source_file_name = "Unknown",
+    plot_id,
     plot_not_savefig = False,
     omit_phase = True,
     ncol = 4
@@ -221,52 +240,40 @@ def plot_autocorrelations(
             col_index = 0
             row_index += 1
 
-    fig.suptitle(f"Autocorrelations: {source_file_name}")
+    fig.suptitle(f"Autocorrelations: {plot_id}")
 
     if plot_not_savefig:
         plt.show()
     else:
-        filename = f"auto_corr_{source_file_name}_{freq_axis[0]:0.3f}-{freq_axis[-1]:0.3f}.png"
+        filename = f"auto_corr_{plot_id}.png"
         plt.savefig(filename, dpi = 150)
         plt.close()
 
-def analyse(
+
+def plot_crosscorrelations(
     autocorr_mean1, # [Chan, Pol]
     autocorr_mean2, # [Chan, Pol]
-    cross_corr, # [Time, Chan, Pol]
-    baseline_antnames,
-    del_t,
-    del_f,
+    crosscorr_mean, # [Chan, Pol]
+    baseline_str,
     freq_axis,
-    source_file_name = "Unknown",
+    plot_id,
     plot_not_savefig = False,
-    measure_time_delay = False,
-    interactively_assess_channel = False,
 ):
-    nchan = autocorr_mean1.shape[0]
-    mean_crosscorr_spec = np.mean(cross_corr, axis = 0, keepdims=False) # Cross correlations
-
-    # Plotting the phase and amplitude of the autocorrelation for 2 antennas
-
-    baseline_str = f"{baseline_antnames[0]}-{baseline_antnames[1]}"
-    freqrange_str = f"{freq_axis[0]:0.3f}-{freq_axis[1]:0.3f}"
-
     sqrt_autos_pol0 = np.sqrt(autocorr_mean1[:,0]*autocorr_mean2[:,0])
     sqrt_autos_pol1 = np.sqrt(autocorr_mean1[:,1]*autocorr_mean2[:,1])
-    mean_crosscorr_pol0_coeff = mean_crosscorr_spec[:,0]/sqrt_autos_pol0
-    mean_crosscorr_pol1_coeff = mean_crosscorr_spec[:,1]/sqrt_autos_pol1
+    mean_crosscorr_pol0_coeff = crosscorr_mean[:,0]/sqrt_autos_pol0
+    mean_crosscorr_pol1_coeff = crosscorr_mean[:,1]/sqrt_autos_pol1
 
     #Plotting the phase and amplitude of the cross correlation
-
     fig, axs = plt.subplots(2, 2, constrained_layout=True, figsize = (10,8))
 
-    axs[0,0].plot(freq_axis, np.angle(mean_crosscorr_spec[:,0], deg = True),  '.', label = 'pol 0')
+    axs[0,0].plot(freq_axis, np.angle(crosscorr_mean[:,0], deg = True),  '.', label = 'pol 0')
     axs[0,0].set_ylabel("Phase (degrees)")
     axs[0,0].set_xlabel("Frequency (MHz)")
     axs[0,0].set_title(f"Crosscorrelation : {baseline_str}")
     axs[0,0].legend()
 
-    axs[0,1].plot(freq_axis, np.angle(mean_crosscorr_spec[:,1], deg = True), '.', label = 'pol 1')
+    axs[0,1].plot(freq_axis, np.angle(crosscorr_mean[:,1], deg = True), '.', label = 'pol 1')
     axs[0,1].set_ylabel("Phase (degrees)")
     axs[0,1].set_xlabel("Frequency (MHz)")
     axs[0,1].set_title(f"Crosscorrelation : {baseline_str}")
@@ -284,100 +291,109 @@ def analyse(
     axs[1,1].set_title(f"Crosscorrelation Coefficient: {baseline_str}")
     axs[1,1].legend()
     
-    fig.suptitle(f"File: {source_file_name}")
+    fig.suptitle(f"File: {plot_id}")
 
     if  plot_not_savefig:
         plt.show()
     else:
-        filename = f"cross_corr_{source_file_name}_{freqrange_str}_{baseline_str}.png"
+        filename = f"cross_corr_{plot_id}_{baseline_str}.png"
         plt.savefig(filename, dpi = 150)
         plt.close()
 
 
-    #Conduct an ifft of the crosscorrelated spectra to get the time delay plots
-    if measure_time_delay:        
-        #Conducting a step of RFI removal using sliding median window before doing ifft
-        # Threshold for RFI removal
-        threshold = 3
-        
-        #Getting bad channels
-        bad_chan0 = flag_rfi(np.abs(mean_crosscorr_spec[:,0]), int(nchan/6), threshold)
-        bad_chan1 = flag_rfi(np.abs(mean_crosscorr_spec[:,1]), int(nchan/6), threshold)
-        
-        # print(bad_chan0.shape[0], bad_chan1.shape[0])
-        
-        ##Zeroing bad channels
-        mean_crosscorr_spec[bad_chan0[:,0],0] = 0
-        mean_crosscorr_spec[bad_chan1[:,0],1] = 0
-
-        #FFT of the spectra
-        mean_crosscorr_pol0_ifft = np.fft.ifft(mean_crosscorr_spec[:,0])
-        mean_crosscorr_pol1_ifft = np.fft.ifft(mean_crosscorr_spec[:,1]) 
-        
-        #FFT shift of the data
-        mean_crosscorr_pol0_ifft = np.fft.ifftshift(mean_crosscorr_pol0_ifft)
-        mean_crosscorr_pol1_ifft = np.fft.ifftshift(mean_crosscorr_pol1_ifft)
-
-        #Defining  total frequency channels and fine channel bandwidths in Hz to get the time lags
-        tlags = np.fft.fftfreq(nchan,del_f*1e+6)
-        tlags = np.fft.fftshift(tlags)*1e+9 #Converting the time lag into us
-        tmax_pol0 = np.argmax(10*np.log(np.abs(mean_crosscorr_pol0_ifft)))
-        tmax_pol1 = np.argmax(10*np.log(np.abs(mean_crosscorr_pol1_ifft)))
-
-        fig, (ax0, ax1) = plt.subplots(1, 2, constrained_layout=True, figsize = (10,8))
-
-        ax0.plot(tlags, 10*np.log(np.abs(mean_crosscorr_pol0_ifft)), label = 'pol 0')
-        ax0.set_ylabel("Power (a.u) log scale")
-        ax0.set_xlabel(f"Time lags (delta t = {tlags[1] -tlags[0]}) ns)")
-        ax0.set_title(f"{baseline_str}: time delay = {tlags[tmax_pol0]} ns")
-        ax0.legend()
-
-        ax1.plot(tlags, 10*np.log(np.abs(mean_crosscorr_pol1_ifft)), label = 'pol 1')
-        ax1.set_ylabel("Power (a.u) log scale")
-        ax1.set_xlabel(f"Time lags (delta t = {tlags[1] -tlags[0]} ns)")
-        ax1.set_title(f"{baseline_str}: time delay = {tlags[tmax_pol1]} ns")
-        ax1.legend()
-
-        fig.suptitle(f"File: {source_file_name}")
-
-        if plot_not_savefig:
-            plt.show()
-        else:
-            filename = f"time_delay_{source_file_name}_{freqrange_str}_{baseline_str}.png"
-            plt.savefig(filename, dpi = 150)
-            plt.close()
-
-
-    #Proceed if needed to track a channel as a function of time
-    if interactively_assess_channel:
-        #Tracking a channel as a function of time
-        chan = int(input(f"Enter the channel (enumeration) to track [0={freq_axis[0]}, {nchan}={freq_axis[1]}]:"))
-        #chan = np.where((abs(freq-chan) < 0.002))[0]
-        #if len(chan) == 0:
-        #   sys.exit("No such channel exist, cannot track")
-        #print(chan)
+def plot_time_delay(
+    crosscorr_mean, # [Chan, Pol]
+    baseline_str,
+    del_f,
+    plot_id,
+    plot_not_savefig = False,
+):
+    # Conduct an ifft of the crosscorrelated spectra to get the time delay plots
+    nchan = crosscorr_mean.shape[0]
+    #Conducting a step of RFI removal using sliding median window before doing ifft
+    # Threshold for RFI removal
+    threshold = 3
     
-        fig, (ax0, ax1) = plt.subplots(1, 2, constrained_layout=True, figsize = (10,8))
-        
-        ax0.plot(np.angle(cross_corr[:,chan,0] ,deg = True), '.', label = 'pol 0')
-        ax0.set_ylabel("Phase (degrees)")
-        ax0.set_xlabel(f"Time samples (delta t = {del_t} s)")
-        ax0.set_title(f"Crosscorrelation : {baseline_str}")
-        ax0.legend()
+    #Getting bad channels
+    bad_chan0 = flag_rfi(np.abs(crosscorr_mean[:,0]), int(nchan/6), threshold)
+    bad_chan1 = flag_rfi(np.abs(crosscorr_mean[:,1]), int(nchan/6), threshold)
+    
+    # print(bad_chan0.shape[0], bad_chan1.shape[0])
+    
+    ##Zeroing bad channels
+    crosscorr_mean[bad_chan0[:,0],0] = 0
+    crosscorr_mean[bad_chan1[:,0],1] = 0
 
-        ax1.plot(np.angle(cross_corr[:,chan,1] ,deg = True), '.', label = 'pol 1')
-        ax1.set_ylabel("Phase (degrees)")
-        ax1.set_xlabel(f"Time samples (delta t = {del_t} s)")
-        ax1.set_title(f"Crosscorrelation : {baseline_str}")
-        ax1.legend()
-       
-        fig.suptitle(f"File: {source_file_name}")
+    #FFT of the spectra
+    mean_crosscorr_pol0_ifft = np.fft.ifft(crosscorr_mean[:,0])
+    mean_crosscorr_pol1_ifft = np.fft.ifft(crosscorr_mean[:,1]) 
+    
+    #FFT shift of the data
+    mean_crosscorr_pol0_ifft = np.fft.ifftshift(mean_crosscorr_pol0_ifft)
+    mean_crosscorr_pol1_ifft = np.fft.ifftshift(mean_crosscorr_pol1_ifft)
 
-        if plot_not_savefig:
-            plt.show()
-        else:
-            plt.savefig(f"chan_trac_{source_file_name}_{baseline_str}.png", dpi = 150)
-            plt.close()
+    #Defining  total frequency channels and fine channel bandwidths in Hz to get the time lags
+    tlags = np.fft.fftfreq(nchan,del_f*1e+6)
+    tlags = np.fft.fftshift(tlags)*1e+9 #Converting the time lag into us
+    crosscorr_ifft_power_pol0 = 10*np.log(np.abs(mean_crosscorr_pol0_ifft))
+    crosscorr_ifft_power_pol1 = 10*np.log(np.abs(mean_crosscorr_pol1_ifft))
+    tmax_pol0 = np.argmax(crosscorr_ifft_power_pol0)
+    tmax_pol1 = np.argmax(crosscorr_ifft_power_pol1)
+
+    fig, (ax0, ax1) = plt.subplots(1, 2, constrained_layout=True, figsize = (10,8))
+
+    ax0.plot(tlags, crosscorr_ifft_power_pol0, label = 'pol 0')
+    ax0.set_ylabel("Power (a.u) log scale")
+    ax0.set_xlabel(f"Time lags (delta t = {tlags[1] -tlags[0]}) ns)")
+    ax0.set_title(f"{baseline_str}: time delay = {tlags[tmax_pol0]} ns")
+    ax0.legend()
+
+    ax1.plot(tlags, crosscorr_ifft_power_pol1, label = 'pol 1')
+    ax1.set_ylabel("Power (a.u) log scale")
+    ax1.set_xlabel(f"Time lags (delta t = {tlags[1] -tlags[0]} ns)")
+    ax1.set_title(f"{baseline_str}: time delay = {tlags[tmax_pol1]} ns")
+    ax1.legend()
+
+    fig.suptitle(f"File: {plot_id}")
+
+    if plot_not_savefig:
+        plt.show()
+    else:
+        filename = f"time_delay_{plot_id}_{baseline_str}.png"
+        plt.savefig(filename, dpi = 150)
+        plt.close()
+    return (tlags[tmax_pol0], tlags[tmax_pol1])
+
+
+def plot_crosscorrelation_time(
+    crosscorr_time, # [Time, Pol]
+    baseline_str,
+    del_t,
+    plot_id,
+    plot_not_savefig = False,
+):
+    
+    fig, (ax0, ax1) = plt.subplots(1, 2, constrained_layout=True, figsize = (10,8))
+    
+    ax0.plot(np.angle(crosscorr_time[:,0] ,deg = True), '.', label = 'pol 0')
+    ax0.set_ylabel("Phase (degrees)")
+    ax0.set_xlabel(f"Time samples (delta t = {del_t} s)")
+    ax0.set_title(f"Crosscorrelation : {baseline_str}")
+    ax0.legend()
+
+    ax1.plot(np.angle(crosscorr_time[:,1] ,deg = True), '.', label = 'pol 1')
+    ax1.set_ylabel("Phase (degrees)")
+    ax1.set_xlabel(f"Time samples (delta t = {del_t} s)")
+    ax1.set_title(f"Crosscorrelation : {baseline_str}")
+    ax1.legend()
+    
+    fig.suptitle(f"File: {plot_id}")
+
+    if plot_not_savefig:
+        plt.show()
+    else:
+        plt.savefig(f"chan_trac_{plot_id}.png", dpi = 150)
+        plt.close()
 
 
 if __name__ == '__main__':
@@ -396,7 +412,6 @@ if __name__ == '__main__':
     parser.add_argument('-t', '--track', action = 'store_true', help = 'Track a channel as a function of time, need to enter a RFI free channel after inspection')
 
     args = parser.parse_args()
-
 
     main(args)
 
