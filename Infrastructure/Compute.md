@@ -30,9 +30,19 @@ Number of IPMI hosts anticipated: 1 x headnode + 128 x Compute + "a few" storage
 Total: 256 + "a few"
 
 
-1 GbE Control domain:
-DHCP from cosmic-head port eno2np1
+#### 1 GbE IP Address Ranges
 
+IP First|IP Last|Control
+-|-|-
+192.168.32.1|192.168.32.19|No DHCP, manually administered
+192.168.32.20|192.168.33.239|Static DHCP from cosmic-head:eno2np1 (i.e. known MACs)
+192.168.33.240|192.169.33.254|Dynamic DHCP from cosmic-head:eno2np1 (i.e. unknown MACs)
+
+IP addresses in the range `192.168.33.240` to `192.168.33.254` are dynamically
+assigned to unknown MAC addresses to accommodate laptops or other ad hoc
+devices that may be temporarily connected for development/diagnostic purposes.
+
+#### 1 GbE IP Address Map
 
 Host (.cosmic.pvt) |MAC|IP|Notes
 -|-|-|-
