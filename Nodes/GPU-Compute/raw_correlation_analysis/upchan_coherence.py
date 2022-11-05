@@ -44,7 +44,6 @@ def main(args):
     del_f = header['CHAN_BW']
     freq_start = freq_mid - ((nchan*del_f)/2.0)
     freq_end = freq_mid + ((nchan*del_f)/2.0)
-    freq = np.arange(freq_start, freq_end, del_f) #Coarse channels
     blocksize = header['BLOCSIZE']
     ntsamp_block = int(blocksize/(nant_chans*npols*2*(nbits/8))) # Number of time samples in the block
     ants = header['ANTNMS00']
@@ -135,187 +134,189 @@ def main(args):
 
     print(f"The used datashape: {data.shape}")
     nchan = data.shape[2]
+    freq_axis = np.linspace(freq_start, freq_end, nchan) #New Upchannelized frequency channels
+
+    source_file_name = os.path.basename(args.dat_file)
+
+    autocorr_mean_dict = {
+        ants[ant1]: np.mean(data[ant1,...]*np.conjugate(data[ant1,...]), axis = 0, keepdims=False)
+        for ant1 in range(0, nant)
+    }
+    plot_autocorrelations(
+        autocorr_mean_dict, # {ant_name: [Chan, Pol]}
+        freq_axis,
+        source_file_name = source_file_name,
+        plot_not_savefig = args.plot,
+    )
 
     #Seperating out the data from two antennas into a different array and changing their order
     for ant1 in range(0, nant):
         for ant2 in range(ant1+1, nant):
             analyse(
-                data[ant1,...],
-                data[ant2,...],
-                args,
+                autocorr_mean_dict[ants[ant1]],
+                autocorr_mean_dict[ants[ant2]],
+                data[ant1,...]*np.conjugate(data[ant2,...]), # cross_corr
                 [ants[ant1], ants[ant2]],
                 del_t,
                 del_f,
-                freq_start,
-                freq_end
+                freq_axis,
+                source_file_name = source_file_name,
+                plot_not_savefig = args.plot,
+                measure_time_delay = args.time_delay,
+                interactively_assess_channel = args.track
             )
     
     tend = time.time()
     print(f"Total processing time: {(tend-tbeg)/60.0} min")
 
-def analyse(
-    data1, # [Time, Chan, Pol]
-    data2, # [Time, Chan, Pol]
-    args,
-    ants,
-    del_t,
-    del_f,
-    freq_start,
-    freq_end,
-):
-    nchan = data1.shape[1]
-    npol = data1.shape[2]
-    freq = np.linspace(freq_start, freq_end, nchan) #New Upchannelized frequency channels
-    t1 = time.time()
-    print("Calculating auto and crosscorrelation")
-
-    #autocorrelation part
-    autocorr1 = data1*np.conjugate(data1) # antenna1
-    autocorr2 = data2*np.conjugate(data2) # antenna2
-
-    # Cross correlation part
-    cross_corr = data1*np.conjugate(data2) # First antenna data times the conjugate of the second antenna
-
-    t2 = time.time() 
-    print(f"Correlation done in {t2-t1} s")
-
-
-    print(f"Averaging data")    
-
-    # Average spectra across specified time intervals
-    mean_autocorr_spec1 = np.mean(autocorr1, axis = 0) #antenna 1 autocorrelation
-    mean_autocorr_spec2 = np.mean(autocorr2, axis = 0) #antenna 2 autocorrelation
-    mean_autocorr_spec1_pol0 = mean_autocorr_spec1[...,0].flatten()
-    mean_autocorr_spec1_pol1 = mean_autocorr_spec1[...,1].flatten()
-    mean_autocorr_spec2_pol0 = mean_autocorr_spec2[...,0].flatten()
-    mean_autocorr_spec2_pol1 = mean_autocorr_spec2[...,1].flatten()
-
-    mean_crosscorr_spec = np.mean(cross_corr, axis = 0) # Cross correlations
-    t3 = time.time() 
-    print(f"Averaging done in {t3-t2} s")
-
-    # #Plotting the phase and amplitude of the autocorrelation for 2 antennas
-
-    antpair_str = f"{ants[0]}-{ants[1]}"
-    freqrange_str = f"{freq_start:0.3f}-{freq_end:0.3f}"
-
-    fig, axs = plt.subplots(2, 2, constrained_layout=True, figsize = (10,8))
-
-    axs[0,0].plot(freq, 10*np.log10(np.abs(mean_autocorr_spec1_pol0)), label = 'pol 0')
-    axs[0,0].plot(freq, 10*np.log10(np.abs(mean_autocorr_spec1_pol1)), label = 'pol 1')
-    axs[0,0].set_ylabel("Amplitude log scale (a.u.)")
-    axs[0,0].set_xlabel("Frequency (MHz)")
-    axs[0,0].set_title(f"Autocorrelation : {ants[0]}")
-    axs[0,0].legend()
-
-    axs[0,1].plot(freq, np.angle(mean_autocorr_spec1_pol0, deg = True),  '.', label = 'pol 0')
-    axs[0,1].plot(freq, np.angle(mean_autocorr_spec1_pol1, deg = True), '.', label = 'pol 1')
-    axs[0,1].set_ylabel("Phase (degrees)")
-    axs[0,1].set_xlabel("Frequency (MHz)")
-    axs[0,1].set_title(f"Autocorrelation : {ants[0]}")
-    axs[0,1].legend()
-
-    axs[1,0].plot(freq, 10*np.log10(np.abs(mean_autocorr_spec2_pol0)), label = 'pol 0')
-    axs[1,0].plot(freq, 10*np.log10(np.abs(mean_autocorr_spec2_pol1)), label = 'pol 1')
-    axs[1,0].set_ylabel("Amplitude log scale (a.u.)")
-    axs[1,0].set_xlabel("Frequency (MHz)")
-    axs[1,0].set_title(f"Autocorrelation : {ants[1]}")
-    axs[1,0].legend()
-
-    axs[1,1].plot(freq, np.angle(mean_autocorr_spec2_pol0, deg = True),  '.', label = 'pol 0')
-    axs[1,1].plot(freq, np.angle(mean_autocorr_spec2_pol1, deg = True), '.', label = 'pol 1')
-    axs[1,1].set_ylabel("Phase (degrees)")
-    axs[1,1].set_xlabel("Frequency (MHz)")
-    axs[1,1].set_title(f"Autocorrelation : {ants[1]}")
-    axs[1,1].legend()
-
-    fig.suptitle(f"File: {args.dat_file}")
-
     if args.plot:
+        return
+    plot_file_collection_id = f"{source_file_name}_{freq_axis[0]:0.3f}-{freq_axis[-1]:0.3f}"
+    print(f"Plotted files for collection: *{plot_file_collection_id}*")
+    return plot_file_collection_id
+
+def plot_autocorrelations(
+    autocorr_mean_dict, # {ant_name: [Chan, Pol]}
+    freq_axis,
+    source_file_name = "Unknown",
+    plot_not_savefig = False,
+    omit_phase = True,
+    ncol = 4
+):
+    nant = len(autocorr_mean_dict)
+    nrow = int(np.ceil(nant/ncol))
+    fig, axs = plt.subplots(
+        nrow,
+        ncol,
+        constrained_layout=True,
+        figsize = (3*ncol,4*nrow),
+        sharex=True
+    )
+
+    row_index = 0
+    col_index = 0
+    for ant_name, autocorr_mean in autocorr_mean_dict.items():
+
+        axs[row_index,col_index].plot(freq_axis, 10*np.log10(np.abs(autocorr_mean[:,0])), label = 'pol 0')
+        axs[row_index,col_index].plot(freq_axis, 10*np.log10(np.abs(autocorr_mean[:,1])), label = 'pol 1')
+        axs[row_index,col_index].set_ylabel("Amplitude log scale (a.u.)")
+        axs[row_index,col_index].set_xlabel("Frequency (MHz)")
+        axs[row_index,col_index].set_title(f"Amplitude : {ant_name}")
+        axs[row_index,col_index].legend()
+
+        if not omit_phase:
+            col_index += 1
+            if col_index == ncol:
+                col_index = 0
+                row_index += 1
+            axs[row_index,col_index+1].plot(freq_axis, np.angle(autocorr_mean[:,0], deg = True),  '.', label = 'pol 0')
+            axs[row_index,col_index+1].plot(freq_axis, np.angle(autocorr_mean[:,1], deg = True), '.', label = 'pol 1')
+            axs[row_index,col_index+1].set_ylabel("Phase (degrees)")
+            axs[row_index,col_index+1].set_xlabel("Frequency (MHz)")
+            axs[row_index,col_index+1].set_title(f"Phase: {ant_name}")
+            axs[row_index,col_index+1].legend()
+
+        col_index += 1
+        if col_index == ncol:
+            col_index = 0
+            row_index += 1
+
+    fig.suptitle(f"Autocorrelations: {source_file_name}")
+
+    if plot_not_savefig:
         plt.show()
     else:
-        filename = f"auto_corr_{os.path.basename(args.dat_file)}_{antpair_str}_{freqrange_str}.png"
+        filename = f"auto_corr_{source_file_name}_{freq_axis[0]:0.3f}-{freq_axis[-1]:0.3f}.png"
         plt.savefig(filename, dpi = 150)
         plt.close()
-        print(f"Saved {filename}")
 
-    sqrt_autos_pol0 = np.sqrt(mean_autocorr_spec1_pol0*mean_autocorr_spec2_pol0)
-    sqrt_autos_pol1 = np.sqrt(mean_autocorr_spec1_pol1*mean_autocorr_spec2_pol1)
-    mean_crosscorr_pol0 = mean_crosscorr_spec[...,0].flatten()
-    mean_crosscorr_pol0_coeff = mean_crosscorr_pol0/sqrt_autos_pol0
-    mean_crosscorr_pol1 = mean_crosscorr_spec[...,1].flatten()
-    mean_crosscorr_pol1_coeff = mean_crosscorr_pol1/sqrt_autos_pol1
+def analyse(
+    autocorr_mean1, # [Chan, Pol]
+    autocorr_mean2, # [Chan, Pol]
+    cross_corr, # [Time, Chan, Pol]
+    baseline_antnames,
+    del_t,
+    del_f,
+    freq_axis,
+    source_file_name = "Unknown",
+    plot_not_savefig = False,
+    measure_time_delay = False,
+    interactively_assess_channel = False,
+):
+    nchan = autocorr_mean1.shape[0]
+    mean_crosscorr_spec = np.mean(cross_corr, axis = 0, keepdims=False) # Cross correlations
+
+    # Plotting the phase and amplitude of the autocorrelation for 2 antennas
+
+    baseline_str = f"{baseline_antnames[0]}-{baseline_antnames[1]}"
+    freqrange_str = f"{freq_axis[0]:0.3f}-{freq_axis[1]:0.3f}"
+
+    sqrt_autos_pol0 = np.sqrt(autocorr_mean1[:,0]*autocorr_mean2[:,0])
+    sqrt_autos_pol1 = np.sqrt(autocorr_mean1[:,1]*autocorr_mean2[:,1])
+    mean_crosscorr_pol0_coeff = mean_crosscorr_spec[:,0]/sqrt_autos_pol0
+    mean_crosscorr_pol1_coeff = mean_crosscorr_spec[:,1]/sqrt_autos_pol1
 
     #Plotting the phase and amplitude of the cross correlation
 
     fig, axs = plt.subplots(2, 2, constrained_layout=True, figsize = (10,8))
 
-    axs[0,0].plot(freq, np.angle(mean_crosscorr_pol0, deg = True),  '.', label = 'pol 0')
+    axs[0,0].plot(freq_axis, np.angle(mean_crosscorr_spec[:,0], deg = True),  '.', label = 'pol 0')
     axs[0,0].set_ylabel("Phase (degrees)")
     axs[0,0].set_xlabel("Frequency (MHz)")
-    axs[0,0].set_title(f"Crosscorrelation : {antpair_str}")
+    axs[0,0].set_title(f"Crosscorrelation : {baseline_str}")
     axs[0,0].legend()
 
-    axs[0,1].plot(freq, np.angle(mean_crosscorr_pol1, deg = True), '.', label = 'pol 1')
+    axs[0,1].plot(freq_axis, np.angle(mean_crosscorr_spec[:,1], deg = True), '.', label = 'pol 1')
     axs[0,1].set_ylabel("Phase (degrees)")
     axs[0,1].set_xlabel("Frequency (MHz)")
-    axs[0,1].set_title(f"Crosscorrelation : {antpair_str}")
+    axs[0,1].set_title(f"Crosscorrelation : {baseline_str}")
     axs[0,1].legend()
 
-    # axs[1,0].plot(freq, 10*np.log10(np.abs(mean_crosscorr_pol0)), label = 'pol 0')
-    axs[1,0].plot(freq, 10*np.log10(np.abs(mean_crosscorr_pol0_coeff)), label = 'pol 0')
+    axs[1,0].plot(freq_axis, 10*np.log10(np.abs(mean_crosscorr_pol0_coeff)), label = 'pol 0')
     axs[1,0].set_ylabel("Amplitude (dB)")
     axs[1,0].set_xlabel("Frequency (MHz)")
-    axs[1,0].set_title(f"Crosscorrelation Coefficient: {antpair_str}")
+    axs[1,0].set_title(f"Crosscorrelation Coefficient: {baseline_str}")
     axs[1,0].legend()
 
-    # axs[1,1].plot(freq, 10*np.log10(np.abs(mean_crosscorr_pol1)), label = 'pol 1')
-    axs[1,1].plot(freq, 10*np.log10(np.abs(mean_crosscorr_pol1_coeff)), label = 'pol 1')
+    axs[1,1].plot(freq_axis, 10*np.log10(np.abs(mean_crosscorr_pol1_coeff)), label = 'pol 1')
     axs[1,1].set_ylabel("Amplitude (dB)")
     axs[1,1].set_xlabel("Frequency (MHz)")
-    axs[1,1].set_title(f"Crosscorrelation Coefficient: {antpair_str}")
+    axs[1,1].set_title(f"Crosscorrelation Coefficient: {baseline_str}")
     axs[1,1].legend()
     
-    fig.suptitle(f"File: {args.dat_file}")
+    fig.suptitle(f"File: {source_file_name}")
 
-    if  args.plot:
+    if  plot_not_savefig:
         plt.show()
     else:
-        filename = f"cross_corr_{os.path.basename(args.dat_file)}_{antpair_str}_{freqrange_str}.png"
+        filename = f"cross_corr_{source_file_name}_{freqrange_str}_{baseline_str}.png"
         plt.savefig(filename, dpi = 150)
         plt.close()
-        print(f"Saved {filename}")
 
 
     #Conduct an ifft of the crosscorrelated spectra to get the time delay plots
-    if  args.time_delay:
-
-        spec_mean_crosscorr_pol0 = np.abs(mean_crosscorr_pol0)
-        spec_mean_crosscorr_pol1 = np.abs(mean_crosscorr_pol1)
-        
+    if measure_time_delay:        
         #Conducting a step of RFI removal using sliding median window before doing ifft
         # Threshold for RFI removal
         threshold = 3
         
         #Getting bad channels
-        bad_chan0 = flag_rfi(spec_mean_crosscorr_pol0, int(nchan/6), threshold)
-        bad_chan1 = flag_rfi(spec_mean_crosscorr_pol1, int(nchan/6), threshold)
+        bad_chan0 = flag_rfi(np.abs(mean_crosscorr_spec[:,0]), int(nchan/6), threshold)
+        bad_chan1 = flag_rfi(np.abs(mean_crosscorr_spec[:,1]), int(nchan/6), threshold)
         
-        print(bad_chan0.shape[0], bad_chan1.shape[0])
+        # print(bad_chan0.shape[0], bad_chan1.shape[0])
         
         ##Zeroing bad channels
-        mean_crosscorr_pol0[bad_chan0[:,0]] = 0
-        mean_crosscorr_pol1[bad_chan1[:,0]] = 0
+        mean_crosscorr_spec[bad_chan0[:,0],0] = 0
+        mean_crosscorr_spec[bad_chan1[:,0],1] = 0
 
         #FFT of the spectra
-        mean_crosscorr_pol0_ifft = np.fft.ifft(mean_crosscorr_pol0)
-        mean_crosscorr_pol1_ifft = np.fft.ifft(mean_crosscorr_pol1) 
+        mean_crosscorr_pol0_ifft = np.fft.ifft(mean_crosscorr_spec[:,0])
+        mean_crosscorr_pol1_ifft = np.fft.ifft(mean_crosscorr_spec[:,1]) 
         
         #FFT shift of the data
         mean_crosscorr_pol0_ifft = np.fft.ifftshift(mean_crosscorr_pol0_ifft)
         mean_crosscorr_pol1_ifft = np.fft.ifftshift(mean_crosscorr_pol1_ifft)
-        
-
 
         #Defining  total frequency channels and fine channel bandwidths in Hz to get the time lags
         tlags = np.fft.fftfreq(nchan,del_f*1e+6)
@@ -328,30 +329,29 @@ def analyse(
         ax0.plot(tlags, 10*np.log(np.abs(mean_crosscorr_pol0_ifft)), label = 'pol 0')
         ax0.set_ylabel("Power (a.u) log scale")
         ax0.set_xlabel(f"Time lags (delta t = {tlags[1] -tlags[0]}) ns)")
-        ax0.set_title(f"{antpair_str}: time delay = {tlags[tmax_pol0]} ns")
+        ax0.set_title(f"{baseline_str}: time delay = {tlags[tmax_pol0]} ns")
         ax0.legend()
 
         ax1.plot(tlags, 10*np.log(np.abs(mean_crosscorr_pol1_ifft)), label = 'pol 1')
         ax1.set_ylabel("Power (a.u) log scale")
         ax1.set_xlabel(f"Time lags (delta t = {tlags[1] -tlags[0]} ns)")
-        ax1.set_title(f"{antpair_str}: time delay = {tlags[tmax_pol1]} ns")
+        ax1.set_title(f"{baseline_str}: time delay = {tlags[tmax_pol1]} ns")
         ax1.legend()
 
-        fig.suptitle(f"File: {args.dat_file}")
+        fig.suptitle(f"File: {source_file_name}")
 
-        if args.plot:
+        if plot_not_savefig:
             plt.show()
         else:
-            filename = f"time_delay_{os.path.basename(args.dat_file)}_{antpair_str}_{freqrange_str}.png"
+            filename = f"time_delay_{source_file_name}_{freqrange_str}_{baseline_str}.png"
             plt.savefig(filename, dpi = 150)
             plt.close()
-            print(f"Saved {filename}")
 
 
     #Proceed if needed to track a channel as a function of time
-    if args.track:
+    if interactively_assess_channel:
         #Tracking a channel as a function of time
-        chan = int(input(f"Enter the channel (enumeration) to track [0={freq_start}, {nchan}={freq_end}]:"))
+        chan = int(input(f"Enter the channel (enumeration) to track [0={freq_axis[0]}, {nchan}={freq_axis[1]}]:"))
         #chan = np.where((abs(freq-chan) < 0.002))[0]
         #if len(chan) == 0:
         #   sys.exit("No such channel exist, cannot track")
@@ -362,21 +362,21 @@ def analyse(
         ax0.plot(np.angle(cross_corr[:,chan,0] ,deg = True), '.', label = 'pol 0')
         ax0.set_ylabel("Phase (degrees)")
         ax0.set_xlabel(f"Time samples (delta t = {del_t} s)")
-        ax0.set_title(f"Crosscorrelation : {antpair_str}")
+        ax0.set_title(f"Crosscorrelation : {baseline_str}")
         ax0.legend()
 
         ax1.plot(np.angle(cross_corr[:,chan,1] ,deg = True), '.', label = 'pol 1')
         ax1.set_ylabel("Phase (degrees)")
         ax1.set_xlabel(f"Time samples (delta t = {del_t} s)")
-        ax1.set_title(f"Crosscorrelation : {antpair_str}")
+        ax1.set_title(f"Crosscorrelation : {baseline_str}")
         ax1.legend()
        
-        fig.suptitle(f"File: {args.dat_file}")
+        fig.suptitle(f"File: {source_file_name}")
 
-        if args.plot:
+        if plot_not_savefig:
             plt.show()
         else:
-            plt.savefig(f"chan_trac_{os.path.basename(args.dat_file)}_{antpair_str}.png", dpi = 150)
+            plt.savefig(f"chan_trac_{source_file_name}_{baseline_str}.png", dpi = 150)
             plt.close()
 
 
