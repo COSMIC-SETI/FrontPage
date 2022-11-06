@@ -48,7 +48,7 @@ Host (.cosmic.pvt) |MAC|IP|Notes
 -|-|-|-
 cosmic-head|3c:ec:ef:78:76:9f|192.168.32.1|eno2np1
 cosmic-100g-switch-0|70:0f:6a:96:f7:ec|192.168.32.20|100 GbE switch
-cosmic-100g-switch-1||192.168.32.21|100 GbE switch, Note 1
+cosmic-100g-switch-1|70:ea:1a:53:7b:56|192.168.32.21|100 GbE switch, Note 1
 cosmic-pdu-0|28:29:86:46:c1:c4|192.168.32.30|SETI Rack #1
 cosmic-pdu-1|28:29:86:46:c4:00|192.168.32.31|SETI Rack #2
 cosmic-pdu-2||192.168.32.32|SETI Rack #3, Note 2
@@ -112,7 +112,7 @@ cosmic-gpu-15-ipmi||192.168.33.125|GPU host IPMI, Note 2
 cosmic-gpu-16-ipmi||192.168.33.126|GPU host IPMI, Note 2
 cosmic-gpu-spare-0-ipmi||TBD|GPU host IPMI, Note 2
 
-Note 1: Installed, but management interface not properly configured  
+Note 1: Management interface not accepting DHCP configuration  
 Note 2: Not yet installed  
 Note 3: This system will get canonical name `asusg0` and change to logical name `cosmic-fpga-spare-0`  
 Note 4: This system will get canonical name `asusg0-ipmi` and change to logical name `cosmic-fpga-spare-0-ipmi`  
