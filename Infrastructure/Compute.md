@@ -80,8 +80,8 @@ cosmic-gpu-14||192.168.32.124|GPU host, Note 2
 cosmic-gpu-15||192.168.32.125|GPU host, Note 2
 cosmic-gpu-16||192.168.32.126|GPU host, Note 2
 cosmic-gpu-spare-0||TBD|GPU host, Note 2
-cosmic-1g-switch-0|10:4f:58:bd:6c:e0|192.168.33.30|1 GbE switch, SETI Rack #1, Note 4
-cosmic-1g-switch-1|10:4f:58:bd:4c:e0|192.168.33.31|1 GbE switch, SETI Rack #2, Note 5
+cosmic-1g-switch-0|10:4f:58:bd:6c:e0|192.168.33.30|1 GbE switch, SETI Rack #1
+cosmic-1g-switch-1|10:4f:58:bd:4c:e0|192.168.33.31|1 GbE switch, SETI Rack #2
 cosmic-1g-switch-2||192.168.33.32|1 GbE switch, SETI Rack #3, Note 2
 cosmic-1g-switch-3||192.168.33.33|1 GbE switch, SETI Rack #4, Note 2
 cosmic-1g-switch-4||192.168.33.34|1 GbE switch, SETI Rack #5, Note 2
@@ -94,7 +94,7 @@ cosmic-fpga-0-ipmi|a0:42:3f:3f:6f:90|192.168.33.100|FPGA host server ipmi
 cosmic-fpga-1-ipmi|a0:42:3f:3f:6f:b4|192.168.33.101|FPGA host server ipmi
 cosmic-fpga-2-ipmi|a0:42:3f:3d:2b:26|192.168.33.102|FPGA host server ipmi
 cosmic-gpu-0-ipmi|3c:ec:ef:2f:0b:08|192.168.33.110|GPU host IPMI
-cosmic-gpu-1-ipmi|04:42:1a:1b:0b:94|192.168.33.111|GPU host IPMI, Note 6
+cosmic-gpu-1-ipmi|04:42:1a:1b:0b:94|192.168.33.111|GPU host IPMI, Note 4
 cosmic-gpu-2-ipmi||192.168.33.112|GPU host IPMI, Note 2
 cosmic-gpu-3-ipmi||192.168.33.113|GPU host IPMI, Note 2
 cosmic-gpu-4-ipmi||192.168.33.114|GPU host IPMI, Note 2
@@ -112,12 +112,10 @@ cosmic-gpu-15-ipmi||192.168.33.125|GPU host IPMI, Note 2
 cosmic-gpu-16-ipmi||192.168.33.126|GPU host IPMI, Note 2
 cosmic-gpu-spare-0-ipmi||TBD|GPU host IPMI, Note 2
 
-Note 1: Installed, but management interface not cabled/configured  
+Note 1: Installed, but management interface not properly configured  
 Note 2: Not yet installed  
 Note 3: This system will get canonical name `asusg0` and change to logical name `cosmic-fpga-spare-0`  
-Note 4: As of 2022-11-04, still using arbitrary DHCP IP 192.168.32.229  
-Note 5: As of 2022-11-04, still using arbitrary DHCP IP 192.168.32.226  
-Note 6: This system will get canonical name `asusg0-ipmi` and change to logical name `cosmic-fpga-spare-0-ipmi`  
+Note 4: This system will get canonical name `asusg0-ipmi` and change to logical name `cosmic-fpga-spare-0-ipmi`  
 
 ### COSMIC 100G Domains (192.168.64.0/23)
 
