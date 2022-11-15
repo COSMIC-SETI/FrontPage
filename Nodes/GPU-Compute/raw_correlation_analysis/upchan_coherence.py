@@ -10,8 +10,9 @@ numpy for FFT (which is slower). Takes 3 minutes on average to do the FFT for a 
 data
 """
 
-import sys,os
+import sys, os
 import time
+import json
 from blimpy import GuppiRaw
 import numpy as np
 import matplotlib
@@ -19,11 +20,13 @@ import tqdm as tq
 from matplotlib import pyplot as plt
 import argparse
 from sliding_rfi_flagger import flag_rfi
+from compute_uvw import vla_uvw
 
 # matplotlib.use('Tkagg')
 
 def main(
     dat_file,
+    log_file,
     band,
     band_center,
     lfft,
@@ -40,9 +43,10 @@ def main(
     filename = dat_file #Input guppi raw file 
 
     gob = GuppiRaw(filename) #Instantiating a guppi object
-
     header = gob.read_first_header() # Reading the first header 
     n_blocks = gob.n_blocks    # Number of blocks in the raw file
+
+    guppi_scanid = header['OBSID']
     nant_chans = int(header['OBSNCHAN'])
     nant = int(header['NANTS'])
     nbits = int(header['NBITS'])
@@ -53,13 +57,21 @@ def main(
     chan_freqwidth = header['CHAN_BW']
     freq_start = freq_mid - ((nchan*chan_freqwidth)/2.0)
     freq_end = freq_mid + ((nchan*chan_freqwidth)/2.0)
+
+    #Get MJD time
+    stt_imjd = float(header['STT_IMJD'])
+    stt_smjd = float(header['STT_SMJD'])
+    stt_offs = float(header['STT_OFFS'])
+    mjd_start = stt_imjd + ((stt_smjd + stt_offs)/86400.0)
+    mjd_now = mjd_start + (tint/(2*86400.0)) # Getting the middle point of the integration
+
     blocksize = header['BLOCSIZE']
     ntsamp_block = int(blocksize/(nant_chans*npols*2*(nbits/8))) # Number of time samples in the block
     ants = header['ANTNMS00']
     ants = ants.split(',')
     ntsamp_tot = tint/chan_timewidth #Total number of coarse time samples in the integration time.
     n_blocks_read = int(ntsamp_tot/ntsamp_block) # Number of blocks to read
-    
+
     if  n_blocks_read > n_blocks:
         print(f"Warning: Given intg_time > duration of the file: {round(n_blocks*ntsamp_block*chan_timewidth)} s, Using maximum time duration of the file")
         n_blocks_read = n_blocks
@@ -76,7 +88,7 @@ def main(
     print("The header info for the file: ")
     print(header)
     print(f"Nblocks: {n_blocks},  Number of blocks to read: {n_blocks_read}")
-   
+    print(f"MJD start time: {mjd_start}, MJD time now: {mjd_now}")
 
     # Collecting data from each block into a big array
     data = np.zeros((nant, nchan, int(ntsamp_block*n_blocks_read), npols), dtype = 'complex64')
@@ -171,6 +183,17 @@ def main(
         #   sys.exit("No such channel exist, cannot track")
         #print(chan)
 
+    #Check if the GUPPI file and logfile has the same scanid, otherwise derived value will be wrong
+    if guppi_scanid != log_scanid(log_file):
+       sys.exit("Make sure the observation log files correspond to the guppi files")
+
+    #Opening a file to save the delays, geodelays and non-geometric delays for each baselines
+    dh = open(f"delays_{source_file_name}.txt", "w")
+    dh.write("Baseline total_pol0  total_pol1  geo  non-geo_pol0 non-geo_pol1 \n")
+        
+    # Geometric delay terms
+    geo_delays = calculate_geo_delay(log_file, mjd_now)
+
     #Seperating out the data from two antennas into a different array and changing their order
     
     nrows = 2
@@ -197,7 +220,9 @@ def main(
             if time_delay:
                 crosscorr_ifft_power_pol0, crosscorr_ifft_power_pol1, tlags = proc_time_delay(
                     crosscorr_mean,
-                    chan_freqwidth
+                    chan_freqwidth,
+                    nchan_fine,
+                    nfine
                 )
 
                 baseline_time_delays = _plot_time_delay(
@@ -207,7 +232,11 @@ def main(
                     axs[2,0], axs[2,1],
                     baseline_str
                 )
-                print(f"Time delay for {baseline_str}: {baseline_time_delays} (ns)")
+
+                geo_baseline = -(geo_delays[ant1] - geo_delays[ant2]) # sign flipping the delay
+                non_geo_baseline = [baseline_time_delays[0] - geo_baseline, baseline_time_delays[1] - geo_baseline]
+                dh.write(f"{baseline_str}   {round(baseline_time_delays[0],3)}   {round(baseline_time_delays[1],3)}   {round(geo_baseline,3)}   {round(non_geo_baseline[0],3)}   {round(non_geo_baseline[1],3)} \n")
+                print(f"Time delay for {baseline_str}: {round(baseline_time_delays[0],3), round(baseline_time_delays[1],3)} (ns), Geo delays: {round(geo_baseline,3)} (ns)")
             
             fig.suptitle(f"File: {plot_id}")
 
@@ -226,7 +255,7 @@ def main(
                     plot_id,
                     savefig_directory = savefig_directory
                 )
-
+    dh.close()
     print(f"Plotted: {plot_id}")
 
 
@@ -367,17 +396,19 @@ def plot_crosscorrelations(
 def proc_time_delay(
     crosscorr_mean,
     chan_freqwidth,
+    final_nchan,
+    nfine,
     rfi_removal_threshold=3
 ):
     # Conduct an ifft of the crosscorrelated spectra to get the time delay plots
-    nchan = crosscorr_mean.shape[0]
+    # nchan = crosscorr_mean.shape[0]
     #Conducting a step of RFI removal using sliding median window before doing ifft
     # Threshold for RFI removal
     rfi_removal_threshold = 3
     
     #Getting bad channels
-    bad_chan0 = flag_rfi(np.abs(crosscorr_mean[:,0]), int(nchan/6), rfi_removal_threshold)
-    bad_chan1 = flag_rfi(np.abs(crosscorr_mean[:,1]), int(nchan/6), rfi_removal_threshold)
+    bad_chan0 = flag_rfi(np.abs(crosscorr_mean[:,0]), int(nfine/6), rfi_removal_threshold)
+    bad_chan1 = flag_rfi(np.abs(crosscorr_mean[:,1]), int(nfine/6), rfi_removal_threshold)
     
     # print(bad_chan0.shape[0], bad_chan1.shape[0])
     
@@ -386,15 +417,15 @@ def proc_time_delay(
     crosscorr_mean[bad_chan1[:,0],1] = 0
 
     #FFT of the spectra
-    mean_crosscorr_pol0_ifft = np.fft.ifft(crosscorr_mean[:,0])
-    mean_crosscorr_pol1_ifft = np.fft.ifft(crosscorr_mean[:,1]) 
+    mean_crosscorr_pol0_ifft = np.fft.ifft(crosscorr_mean[:,0], n = final_nchan)
+    mean_crosscorr_pol1_ifft = np.fft.ifft(crosscorr_mean[:,1], n = final_nchan) 
     
     #FFT shift of the data
     mean_crosscorr_pol0_ifft = np.fft.ifftshift(mean_crosscorr_pol0_ifft)
     mean_crosscorr_pol1_ifft = np.fft.ifftshift(mean_crosscorr_pol1_ifft)
 
     #Defining  total frequency channels and fine channel bandwidths in Hz to get the time lags
-    tlags = np.fft.fftfreq(nchan,chan_freqwidth*1e+6)
+    tlags = np.fft.fftfreq(final_nchan,chan_freqwidth*1e+6)
     tlags = np.fft.fftshift(tlags)*1e+9 #Converting the time lag into us
     crosscorr_ifft_power_pol0 = 10*np.log(np.abs(mean_crosscorr_pol0_ifft))
     crosscorr_ifft_power_pol1 = 10*np.log(np.abs(mean_crosscorr_pol1_ifft))
@@ -430,11 +461,15 @@ def plot_time_delay(
     baseline_str,
     chan_freqwidth,
     plot_id,
+    final_nchan,
+    nfine,
     savefig_directory = None,
 ):
     crosscorr_ifft_power_pol0, crosscorr_ifft_power_pol1, tlags = proc_time_delay(
         crosscorr_mean,
-        chan_freqwidth
+        chan_freqwidth,
+        final_nchan,
+        nfine,
     )
 
     fig, (ax0, ax1) = plt.subplots(1, 2, constrained_layout=True, figsize = (10,8))
@@ -489,6 +524,53 @@ def plot_crosscorrelation_time(
         plt.close()
 
 
+def log_scanid(metafile):
+    
+    fh = open(metafile)
+    data = json.load(fh)
+    scanid = data['META']['scanid']
+    fh.close()
+    return scanid
+
+
+def calculate_geo_delay(metafile, mjd_time):
+
+    fh = open(metafile)
+    data =  json.load(fh)
+    
+    #scanid = data['META']['scanid']
+    #mjd_time_now = data['META']['tnow']
+    #mjd_time_start = data['META']['tstart']
+    #source = data['META']['src']
+    ra_deg = data['META']['ra_deg']
+    dec_deg = data['META']['dec_deg']
+    ants_log = data['META_arrayConfiguration']['cosmic-gpu-0.1']['ANTNMS00']
+    ants_log = ants_log.split(',')
+    nants_log = data['META_arrayConfiguration']['cosmic-gpu-0.1']['NANTS']
+
+    # The VLA array center coordinates in ECEF
+    VLA_X = -1601185.4
+    VLA_Y = -5041977.5
+    VLA_Z = 3554875.9
+
+    XYZ = np.zeros((nants_log,3))
+
+    for i,ant in enumerate(ants_log):
+        X = data['META_antennaProperties'][ant]['X']
+        Y = data['META_antennaProperties'][ant]['Y']
+        Z = data['META_antennaProperties'][ant]['Z']
+
+        XYZ[i,:] = [X + VLA_X, Y + VLA_Y, Z + VLA_Z]
+    
+    fh.close()
+    #Calculating the uvw values
+    uvw = vla_uvw(mjd_time, (ra_deg*(np.pi/180.0), dec_deg*(np.pi/180.0)), XYZ)
+    
+    # Returning only the W term which are the projected baselines towards the source
+    # converting the distance(m) to ns (d/c)*1e+9 == d*(10/3)
+    return uvw[:,2]*(10.0/3.0)
+
+
 if __name__ == '__main__':
     
     # Argument parser taking various arguments
@@ -496,6 +578,7 @@ if __name__ == '__main__':
         description='Reads guppi rawfiles, upchannelize, conducts auto and crosscorrelation',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-d','--dat-file', type = str, required = True, help = 'GUPPI raw file to read in')
+    parser.add_argument('-l','--log-file', type = str, required = True, help = 'Log-metafile to calculate the geometric delays')
     parser.add_argument('-b','--band', type = float, required = False, default = 1.0,  help = 'Bandwidth to plot specified as a decimal percentage [0.0, 1.0], default:1.0')
     parser.add_argument('-bc','--band-center', type = float, required = False, default = 1.0,  help = 'Bandwidth center to plot specified as a decimal percentage [0.0, 1.0]-`band`, default:0.5')
     parser.add_argument('-f','--lfft', type = int, required = True, default = 120,  help = 'Length of FFT, default:120')
@@ -510,6 +593,7 @@ if __name__ == '__main__':
 
     main(
         args.dat_file,
+        args.log_file,
         args.band,
         args.band_center,
         args.lfft,
