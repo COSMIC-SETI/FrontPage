@@ -6,9 +6,9 @@ Requires=network.target
 [Service]
 Type=simple
 Restart=always
-ExecStart=/bin/bash /usr/local/bin/init_redis_server.sh
-ExecStop=pkill -ef "/usr/local/bin/init_redis_server.sh"
-StartLimitIntervalSec=0
+ExecStart=/home/cosmic/anaconda3/envs/cosmic_vla/bin/redis-server --notify-keyspace-events KEA --protected-mode no
+StandardOutput=append://home/cosmic/logs/redis_server.log
+StandardError=append://home/cosmic/logs/redis_server.log
 
 [Install]
 WantedBy=multi-user.target
