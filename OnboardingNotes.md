@@ -14,6 +14,8 @@ Welcome to the COSMIC-VLA wiki!
 * [Metadata collection with mcast](https://docs.google.com/document/d/1-JNBLu0shSc37QVmYsgGC8zLYKIW3eoW6-BmuoSIi5U/edit)
 * [COSMIS DSP flowchart](https://drive.google.com/file/d/1uvJGjCCOi-rpOVnLSkC_L1pJtnS2vnZ5/view)
 
+## Commissioning Notes
+* [Testing BLADE using ATA](https://github.com/MydonSolutions/blade/blob/blade-cli-vla/tests/apps/blade-cli/manual.md#primary-sky-data-test)
 
 ## Previous presentations: 
 
