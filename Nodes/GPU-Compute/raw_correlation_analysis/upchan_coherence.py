@@ -35,7 +35,8 @@ def main(
     output_directory,
     crosscorr_channel_time_promptplot,
     autocorr_show_phase = False,
-    autocorr_cross_polarizations = False
+    autocorr_cross_polarizations = False,
+    only_baselines_with = None
 ):
     # Collecting the data from the guppi raw files and
     # saving them to an array
@@ -69,8 +70,18 @@ def main(
 
     blocksize = header['BLOCSIZE']
     ntsamp_block = int(blocksize/(nant_chans*npols*2*(nbits/8))) # Number of time samples in the block
-    ants = header['ANTNMS00'] # TODO process `nant` antenna names
-    ants = ants.split(',')
+    ants = []
+    antname_index = 0
+    while len(ants) < nant:
+        ant_names = header[f"ANTNMS{antname_index:02d}"]
+        assert ant_names is not None, f"ANTNMS{antname_index:02d} doesn't exist"
+        antname_index += 1
+        ant_names = ant_names.split(',')
+        if nant - len(ants) > len(ant_names):
+            ants.extend(ant_names)
+        else:
+            ants.extend(ant_names[0:nant - len(ants)])
+
     ntsamp_tot = tint/chan_timewidth #Total number of coarse time samples in the integration time.
     n_blocks_read = int(ntsamp_tot/ntsamp_block) # Number of blocks to read
 
@@ -218,6 +229,9 @@ def main(
         nrows += 1
     for ant1 in range(0, nant):
         for ant2 in range(ant1+1, nant):
+            if only_baselines_with is not None and only_baselines_with not in [ants[ant1], ants[ant2]]:
+                continue
+
             baseline_str = f"{ants[ant1]}-{ants[ant2]}"
             crosscorr = data[ant1,...]*np.conjugate(data[ant2,...])
             crosscorr_mean = np.mean(crosscorr, axis = 0, keepdims=False) # Cross correlations
@@ -252,7 +266,7 @@ def main(
 
                 geo_baseline = -(geo_delays[ant1] - geo_delays[ant2]) # sign flipping the delay
                 non_geo_baseline = [baseline_time_delays[0] - geo_baseline, baseline_time_delays[1] - geo_baseline]
-                dh.write(f"{baseline_str},{baseline_time_delays[0]:+012.03f},{baseline_time_delays[1]:+012.03f},{geo_baseline:+012.03f},{non_geo_baseline[0]:+012.03f},{non_geo_baseline[1]:+012.03f}\n")
+                dh.write(f"{baseline_str},{baseline_time_delays[0]:> 12.03f},{baseline_time_delays[1]:> 12.03f},{geo_baseline:> 12.03f},{non_geo_baseline[0]:> 12.03f},{non_geo_baseline[1]:> 12.03f}\n")
                 print(f"Time delay for {baseline_str}: {round(baseline_time_delays[0],3), round(baseline_time_delays[1],3)} (ns), Geo delays: {round(geo_baseline,3)} (ns)")
             
             fig.suptitle(f"File: {plot_id}")
@@ -592,6 +606,8 @@ if __name__ == '__main__':
     parser.add_argument('-ap', '--autocorr-show-phase', action = 'store_true', help = 'Don\'t omit the phase in the autocorrelation plot')
     parser.add_argument('-ac', '--autocorr-cross-pols', action = 'store_true', help = 'Cross the polarizations for the autocorrelations')
 
+    parser.add_argument('-r', '--reference-antenna', type = str, default = None, help = 'Select a reference antenna, so that only baselines with that antenna are processed')
+
     args = parser.parse_args()
 
     main(
@@ -605,6 +621,7 @@ if __name__ == '__main__':
         args.output_directory,
         args.track,
         autocorr_show_phase = args.autocorr_show_phase,
-        autocorr_cross_polarizations = args.autocorr_cross_pols
+        autocorr_cross_polarizations = args.autocorr_cross_pols,
+        only_baselines_including = args.reference_antenna
     )
 
