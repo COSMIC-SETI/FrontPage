@@ -208,7 +208,9 @@ def main(
                 "total_pol1",
                 "geo",
                 "non-geo_pol0",
-                "non-geo_pol1"
+                "non-geo_pol1",
+                "sigma_pol0",
+                "sigma_pol1"
             ]
         )+"\n"
     )
@@ -264,9 +266,22 @@ def main(
                     baseline_str
                 )
 
+                #Gather statistics of the data
+                mean_pol0_ifft = np.mean(crosscorr_ifft_power_pol0)
+                mean_pol1_ifft = np.mean(crosscorr_ifft_power_pol1)
+
+                stdev_pol0_ifft = np.sqrt(np.sum(np.square(crosscorr_ifft_power_pol0 - mean_pol0_ifft)))
+                stdev_pol1_ifft = np.sqrt(np.sum(np.square(crosscorr_ifft_power_pol1 - mean_pol1_ifft)))
+
+                tmax_pol0 = np.argmax(crosscorr_ifft_power_pol0)
+                tmax_pol1 = np.argmax(crosscorr_ifft_power_pol1)
+
+                sigma_level_pol0 = (crosscorr_ifft_power_pol0[tmax_pol0] - mean_pol0_ifft)/stdev_pol0_ifft
+                sigma_level_pol1 = (crosscorr_ifft_power_pol1[tmax_pol1] - mean_pol1_ifft)/stdev_pol1_ifft
+
                 geo_baseline = -(geo_delays[ant1] - geo_delays[ant2]) # sign flipping the delay
                 non_geo_baseline = [baseline_time_delays[0] - geo_baseline, baseline_time_delays[1] - geo_baseline]
-                dh.write(f"{baseline_str},{baseline_time_delays[0]:> 12.03f},{baseline_time_delays[1]:> 12.03f},{geo_baseline:> 12.03f},{non_geo_baseline[0]:> 12.03f},{non_geo_baseline[1]:> 12.03f}\n")
+                dh.write(f"{baseline_str},{baseline_time_delays[0]:> 12.03f},{baseline_time_delays[1]:> 12.03f},{geo_baseline:> 12.03f},{non_geo_baseline[0]:> 12.03f},{non_geo_baseline[1]:> 12.03f},{sigma_level_pol0:> 12.03f},{sigma_level_pol1:> 12.03f}\n")
                 print(f"Time delay for {baseline_str}: {round(baseline_time_delays[0],3), round(baseline_time_delays[1],3)} (ns), Geo delays: {round(geo_baseline,3)} (ns)")
             
             fig.suptitle(f"File: {plot_id}")
