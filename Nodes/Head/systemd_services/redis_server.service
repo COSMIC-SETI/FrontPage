@@ -6,7 +6,7 @@ Requires=network.target
 [Service]
 Type=simple
 Restart=always
-ExecStart=/home/cosmic/anaconda3/envs/cosmic_vla/bin/redis-server --notify-keyspace-events KEA --protected-mode no
+ExecStart=/home/cosmic/anaconda3/envs/cosmic_vla/bin/redis-server /home/cosmic/dev/FrontPage/Nodes/Head/systemd_services/redis.conf
 StandardOutput=append://home/cosmic/logs/redis_server.log
 StandardError=append://home/cosmic/logs/redis_server.log
 
