@@ -71,12 +71,18 @@ lspci -nnk | grep -iA2 vga output below with the successful registration of nvid
 # Software Setup
 
 ## General package install:
-`# apt install automake gfortran numactl ruby-dev linux-tools-$(uname -r) liberfa-dev libhdf5-dev libspdlog-dev package-conf gcc-10 g++-10`
+```
+# apt install automake gfortran numactl ruby-dev linux-tools-$(uname -r) liberfa-dev libhdf5-dev libspdlog-dev package-conf gcc-10 g++-10 libboost-all-dev cmake
+$ pip install meson ninja
+```
+
 
 ### Clone [hashpipe](https://github.com/MydonSolutions/hashpipe/tree/seti_ata_ibv)
 ```
-./configure --prefix=/home/cosmic/dev/hashpipe/install
-make
+cd src
+autoreconf -is
+./configure --prefix=/home/cosmic/src/hashpipe/install
+make install
 ```
 
 ### Clone [pyslalib](https://github.com/scottransom/pyslalib)
@@ -86,20 +92,21 @@ make
 
 ### Clone [uvh5c99](https://github.com/MydonSolutions/uvh5c99)
 ```
-git submodule update –recursive
-cd external_src/radiointerferometry && meson builddir && cd builddir && ninja && cd ../../../
-meson build && cd build && ninja test
+git submodule update --init –-recursive
+meson setup build && cd build && ninja test
 ```
 
 ### Clone [blade](https://github.com/luigifcruz/blade)`
 ```
-CC=gcc-10 CXX=g++-10 meson build && cd build && ninja test
+CXX=g++-10 meson setup build -Dc_args=-D_GNU_SOURCE -Dbuildtype=release -Dprefix=/home/cosmic/src/blade/install
+cd build && ninja 
 ```
 
-### Clone [xGPU](https://github.com/GPU-correlators/xGPU)
+### Clone [xGPU](https://github.com/david-macmahon/xGPU.git)
 ```
 git checkout davidm
-make NTIME=32768 NTIME_PIPE=128 NPOL=2 NFREQUENCY=256 NSTATION=16 CUDA_ARCH=sm_86 DP4A=yes
+cd src
+make NTIME=32768 NTIME_PIPE=128 NPOL=2 NFREQUENCY=32 NSTATION=16 CUDA_ARCH=sm_86 DP4A=yes
 ```
 
 Add to /etc/bash.bashrc
@@ -108,9 +115,12 @@ Add to /etc/bash.bashrc
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:"/home/cosmic/src/xGPU/src"
 ```
 
-### Clone [hpguppi](https://github.com/MydonSolutions/hpguppi_daq/tree/seti-ata-8bit)
+### Clone [hpguppi](https://github.com/MydonSolutions/hpguppi_daq/tree/seti-vla-8bit)
 ```
-CXX=g++-10 ./configure --with-libsla=/home/cosmic/dev/pyslalib --with-hashpipe=/home/cosmic/dev/hashpipe/src/.libs --with-libblade=/home/cosmic/src/blade/build --with-cuda-include=/usr/local/cuda-11.4.1/include --with-libxgpu=/home/cosmic/src/xGPU/src/ --with-xgpu-include=/home/cosmic/src/xGPU/src --with-libuvh5=/home/cosmic/src/uvh5c99/build
+git checkout seti-vla-8bit
+cd src
+autoreconf -is
+CXX=g++-10 ./configure --with-sla-lib=/home/cosmic/src/pyslalib --with-hashpipe=/home/cosmic/src/hashpipe/src/.libs --with-blade=/home/cosmic/src/blade/build --with-cuda-include=/usr/local/cuda/include --with-xgpu=/home/cosmic/src/xGPU/src/ --with-uvh5=/home/cosmic/src/uvh5c99/build
 make
 ```
 
