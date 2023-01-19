@@ -22,6 +22,8 @@ import argparse
 from sliding_rfi_flagger import flag_rfi
 from compute_uvw import vla_uvw
 
+from scipy.stats import median_absolute_deviation as mad
+
 # matplotlib.use('Tkagg')
 
 def main(
@@ -38,6 +40,9 @@ def main(
     autocorr_cross_polarizations = False,
     only_baselines_with = None
 ):
+    if output_directory is None:
+        output_directory = os.path.dirname(dat_file)
+
     # Collecting the data from the guppi raw files and
     # saving them to an array
 
@@ -209,8 +214,8 @@ def main(
                 "geo",
                 "non-geo_pol0",
                 "non-geo_pol1",
-                "sigma_pol0",
-                "sigma_pol1"
+                "snr_pol0",
+                "snr_pol1"
             ]
         )+"\n"
     )
@@ -258,7 +263,7 @@ def main(
                     nfine
                 )
 
-                baseline_time_delays = _plot_time_delay(
+                baseline_time_delays, baseline_snrs = _plot_time_delay(
                     crosscorr_ifft_power_pol0,
                     crosscorr_ifft_power_pol1,
                     tlags,
@@ -266,22 +271,9 @@ def main(
                     baseline_str
                 )
 
-                #Gather statistics of the data
-                mean_pol0_ifft = np.mean(crosscorr_ifft_power_pol0)
-                mean_pol1_ifft = np.mean(crosscorr_ifft_power_pol1)
-
-                stdev_pol0_ifft = np.sqrt(np.sum(np.square(crosscorr_ifft_power_pol0 - mean_pol0_ifft)))
-                stdev_pol1_ifft = np.sqrt(np.sum(np.square(crosscorr_ifft_power_pol1 - mean_pol1_ifft)))
-
-                tmax_pol0 = np.argmax(crosscorr_ifft_power_pol0)
-                tmax_pol1 = np.argmax(crosscorr_ifft_power_pol1)
-
-                sigma_level_pol0 = (crosscorr_ifft_power_pol0[tmax_pol0] - mean_pol0_ifft)/stdev_pol0_ifft
-                sigma_level_pol1 = (crosscorr_ifft_power_pol1[tmax_pol1] - mean_pol1_ifft)/stdev_pol1_ifft
-
                 geo_baseline = -(geo_delays[ant1] - geo_delays[ant2]) # sign flipping the delay
                 non_geo_baseline = [baseline_time_delays[0] - geo_baseline, baseline_time_delays[1] - geo_baseline]
-                dh.write(f"{baseline_str},{baseline_time_delays[0]:> 12.03f},{baseline_time_delays[1]:> 12.03f},{geo_baseline:> 12.03f},{non_geo_baseline[0]:> 12.03f},{non_geo_baseline[1]:> 12.03f},{sigma_level_pol0:> 12.03f},{sigma_level_pol1:> 12.03f}\n")
+                dh.write(f"{baseline_str},{baseline_time_delays[0]:> 12.03f},{baseline_time_delays[1]:> 12.03f},{geo_baseline:> 12.03f},{non_geo_baseline[0]:> 12.03f},{non_geo_baseline[1]:> 12.03f},{baseline_snrs[0]:> 12.03f},{baseline_snrs[1]:> 12.03f}\n")
                 print(f"Time delay for {baseline_str}: {round(baseline_time_delays[0],3), round(baseline_time_delays[1],3)} (ns), Geo delays: {round(geo_baseline,3)} (ns)")
             
             fig.suptitle(f"File: {plot_id}")
@@ -486,7 +478,16 @@ def _plot_time_delay(
     baseline_str
 ):
     tmax_pol0 = np.argmax(crosscorr_ifft_power_pol0)
+    sig_pol0 = crosscorr_ifft_power_pol0[tmax_pol0]
+    noise_pol0 = mad(crosscorr_ifft_power_pol0)
+    median_pol0 = np.median(crosscorr_ifft_power_pol0)
+    snr_pol0 = (sig_pol0-median_pol0)/noise_pol0
+
     tmax_pol1 = np.argmax(crosscorr_ifft_power_pol1)
+    sig_pol1 = crosscorr_ifft_power_pol1[tmax_pol1]
+    noise_pol1 = mad(crosscorr_ifft_power_pol1)
+    median_pol1 = np.median(crosscorr_ifft_power_pol1)
+    snr_pol1 = (sig_pol1-median_pol1)/noise_pol1
 
     ax0.plot(tlags, crosscorr_ifft_power_pol0, label = 'pol 0')
     ax0.set_ylabel("Power (a.u) log scale")
@@ -499,7 +500,7 @@ def _plot_time_delay(
     ax1.set_xlabel(f"Time lags (delta t = {tlags[1] -tlags[0]} ns)")
     ax1.set_title(f"{baseline_str}: time delay = {tlags[tmax_pol1]} ns")
     ax1.legend()
-    return (tlags[tmax_pol0], tlags[tmax_pol1])
+    return (tlags[tmax_pol0], tlags[tmax_pol1]), (snr_pol0, snr_pol1)
 
 
 def plot_time_delay(
@@ -520,7 +521,7 @@ def plot_time_delay(
 
     fig, (ax0, ax1) = plt.subplots(1, 2, constrained_layout=True, figsize = (10,8))
 
-    tdelay_pol0, tdelay_pol1 = _plot_time_delay(
+    tdelay_pols, snr_pols = _plot_time_delay(
         crosscorr_ifft_power_pol0,
         crosscorr_ifft_power_pol1,
         tlags,
@@ -536,7 +537,7 @@ def plot_time_delay(
         filename = os.path.join(savefig_directory, f"time_delay_{plot_id}_{baseline_str}.png")
         plt.savefig(filename, dpi = 150)
         plt.close()
-    return (tdelay_pol0, tdelay_pol1)
+    return tdelay_pols, snr_pols
 
 
 def plot_crosscorrelation_time(
@@ -637,6 +638,6 @@ if __name__ == '__main__':
         args.track,
         autocorr_show_phase = args.autocorr_show_phase,
         autocorr_cross_polarizations = args.autocorr_cross_pols,
-        only_baselines_including = args.reference_antenna
+        only_baselines_with = args.reference_antenna
     )
 
