@@ -38,7 +38,7 @@ Total: 256 + "a few"
 #### 1 GbE IP Address Ranges
 
 IP First | IP Last | Control
-- | - | -
+-|-|-
 192.168.32.1   | 192.168.32.19  | No DHCP, manually administered
 192.168.32.20  | 192.168.33.239 | Static DHCP from cosmic-head:eno2np1 (i.e. known MACs)
 192.168.33.240 | 192.169.33.254 | Dynamic DHCP from cosmic-head:eno2np1 (i.e. unknown MACs)
@@ -50,7 +50,7 @@ devices that may be temporarily connected for development/diagnostic purposes.
 #### 1 GbE IP Address Map
 
 Host (.cosmic.pvt)  | MAC | IP | Notes
-- | - | - | -
+-|-|-|-
 cosmic-head | 3c:ec:ef:78:76:9f | 192.168.32.1 | eno2np1
 cosmic-100g-switch-0 | 70:0f:6a:96:f7:ec | 192.168.32.20 | 100 GbE switch, Rack #1
 cosmic-100g-switch-1 | 70:ea:1a:53:7b:56 | 192.168.32.21 | 100 GbE switch, Rack #1
@@ -124,7 +124,7 @@ Number of hosts anticipated: 128 Compute + "a few" storage / axiliary
 This network uses `cosmic-100g-switch-0`.
 
 Host | MAC | IP | Notes
-- | - | - | -
+-|-|-|-
 cosmic-storage-1-100g-0 | b8:ce:f6:a6:42:81 | 192.168.64.11 | cosmic-storage-1/enp175s0f1np1 (eth3)
 cosmic-storage-2-100g-0 | b8:ce:f6:d2:89:6b | 192.168.64.12 | cosmic-storage-2/enp175s0f1np1 (eth3)
 cosmic-gpu-0-100g-0 | b8:ce:f6:a6:42:a1 | 192.168.64.100 | cosmic-gpu-0/enp97s0f1
@@ -153,7 +153,7 @@ This network uses `cosmic-100g-switch-1`.
 Number of hosts anticipated: 128 Compute + "a few" storage / axiliary
 
 Host | MAC | IP | Notes
-- | - | - | -
+-|-|-|-
 cosmic-storage-1-100g-1 | b8:ce:f6:a6:42:80 | 192.168.65.11 | cosmic-storage-1/enp175s0f0np0 (eth2)
 cosmic-storage-2-100g-1 | b8:ce:f6:d2:89:6a | 192.168.65.12 | cosmic-storage-2/enp175s0f0np0 (eth2)
 cosmic-gpu-0-100g-1 | b8:ce:f6:a6:41:89 | 192.168.65.100 | cosmic-gpu-0/enp225s0f1; Uses switch `cosmic-100g-switch-0`
