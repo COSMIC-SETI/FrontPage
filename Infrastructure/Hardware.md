@@ -33,7 +33,7 @@ Each server comprises:
 - 2 x Mellanox MCX623106AS-CDAT dual port 100GbE
 - 2 x Highpoint SSD7540 NVMe RAID
 - 16 x 1TB Samsung 980 Pro NVMe
-- 3 x PNY RTX A4000 GPU
+- 6 x PNY RTX A4000 GPU
 
 ## Storage
 
