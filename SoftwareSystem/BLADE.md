@@ -7,14 +7,16 @@ BLADE's exposed pipelines are static arrangments of its modules to achieve certa
 
 # Beamformation Pipeline
 
+![BLADE ATA CLI Pipeline](./img/BLADE.png)
+
 ## Inputs
 
 ### CLI Arguments
 
-A specification of upchannelisation rate (`F`), coarse channel ingest rate (`C`) and fine-spectra beamform-search rate (`T`) determines the data shape that flows through the pipeline:
+A specification of upchannelisation rate (`Tu`), coarse channel ingest rate (`Fc`) and fine-spectra beamform-search rate (`T`) determines the data shape that flows through the pipeline:
 
-- Ingest `F` coarse-spectra of `C` channels
-- Upchannelise `F` coarse-spectra, accumulating `T` fine-spectra
+- Ingest `Tu` coarse-spectra of `Fc` channels
+- Upchannelise `Tu` coarse-spectra, accumulating `T` fine-spectra
 - Beamform `T` fine-spectra
 - Search `T` fine-spectra
 
@@ -102,5 +104,6 @@ The signal search kernel is provided by [seticore](https://github.com/lacker/set
 
 ## Idiosyncrasies
 
-As the pipeline begins with upchannelisation which produces a single fine-spectrum at a time, small upchannelisation rates infer many copies of relatively small amounts of data, leading to inefficiencies.
-Furthermore, Direct-IO opened RAW files must be read in whole multiples of 512 bytes. This imposes a lower limit on the upchannelisation rate relative to the sample byte-size of the file: `upchannelisation_rate_lower_limit = 512 / (num_pol * 2 * num_bits)`. For an 8-bit RAW file (2 bytes per complex sample), the lower limit of upchannelisation is 128.
+Direct-IO opened RAW files must be read in whole multiples of 512 bytes. This imposes a lower limit on the upchannelisation rate relative to the sample byte-size of the file: `upchannelisation_rate_lower_limit = 512 / (num_coarse_channel_ingest * num_pol * 2 * num_bits)`. For an 8-bit RAW file (2 bytes per complex sample), the lower limit of upchannelisation is 128, if the coarse-channel ingest rate is 1.
+
+As the pipeline begins with upchannelisation which produces a single fine-spectrum at a time, small upchannelisation rates infer many copies of relatively small amounts of data, leading to inefficiencies. As can be inferred from the above, another factor of the ingest datasize, asides from the upchannelisation rate, is the coarse-channel ingest rate parameter. The coarse-channel ingest rate can be used to increase the data-rate and possibly mitigate some inefficiency when performing low upchannelisation operations.
