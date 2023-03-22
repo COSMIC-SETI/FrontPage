@@ -1,0 +1,18 @@
+[Unit]
+Description=Secondary Hashpipe Instances (2,3)
+After=network.target
+Requires=network.target
+StartLimitIntervalSec=0
+
+[Service]
+EnvironmentFile=/home/cosmic/hpdaq_service.conf
+Restart=on-failure
+Type=forking
+ExecStart=/home/cosmic/dev/hpguppi_daq/src/init_hpguppi.py $INSTANCE_SYSTEM_NAME 2,3 --configfile /home/cosmic/dev/hpguppi_daq/src/config_hpguppi.yml
+ExecStartPost=/usr/local/bin/hashpipe_redis_gateway.rb -s redishost -i 2,3 &
+ExecStopPost=/home/cosmic/dev/hpguppi_daq/src/init_hpguppi.py vla_ibv 2,3 --delete --configfile /home/cosmic/dev/hpguppi_daq/src/config_hpguppi.yml
+StandardOutput=append:/var/log/init_hpguppi.log
+StandardError=append:/var/log/init_hpguppi.log
+
+[Install]
+WantedBy=multi-user.target
