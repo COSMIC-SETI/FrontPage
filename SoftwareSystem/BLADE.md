@@ -18,7 +18,7 @@ Issuing `blade-cli -t ATA --help` will produce explicit usage information and sh
 A specification of upchannelisation rate (`Tu`), coarse channel ingest rate (`Fc`) and fine-spectra beamform-search rate (`T`) determines the data shape that flows through the pipeline:
 
 - Ingest `Tu` coarse-spectra of `Fc` channels
-- Upchannelise `Tu` coarse-spectra, accumulating `T` fine-spectra
+- Upchannelise `Tu` coarse-spectra, gathering `T` fine-spectra
 - Beamform `T` fine-spectra
 - Search `T` fine-spectra
 
