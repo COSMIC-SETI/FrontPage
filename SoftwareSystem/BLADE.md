@@ -13,12 +13,21 @@ BLADE's exposed pipelines are static arrangments of its modules to achieve certa
 
 ### CLI Arguments
 
+Issuing `blade-cli -t ATA --help` will produce explicit usage information and should be the prioritised source for this information.
+
 A specification of upchannelisation rate (`Tu`), coarse channel ingest rate (`Fc`) and fine-spectra beamform-search rate (`T`) determines the data shape that flows through the pipeline:
 
 - Ingest `Tu` coarse-spectra of `Fc` channels
 - Upchannelise `Tu` coarse-spectra, accumulating `T` fine-spectra
 - Beamform `T` fine-spectra
 - Search `T` fine-spectra
+
+Further arguments are exposed to control the dedoppler search:
+
+- SNR threshold
+- Drift-rate minimum
+- Drift-rate maximum
+- Exclude hits with drift rate of zero
 
 ### BFR5 File
 
@@ -100,6 +109,11 @@ The signal search kernel is provided by [seticore](https://github.com/lacker/set
 - `.hits` files hold [data](https://github.com/lacker/seticore/blob/master/hit.capnp) describing the various signals found by the search kernel.
 - `.stamps` files hold multiple stamps of the RAW data that lead to detected signals. The stamp is of upchannelized RAW data (prior to beamformation). Multiple hits may have their source in the same or very close region of the RAW data, so stamps are made of regions ascertained after grouping hits within a given margin.
 
+The Dedoppler search has an SNR threshold argument (exposed at the CLI), below which hits are dismissed. The full list of hits that are above the threshold populate the output `.hits` file, but because a Hit (capitilised to indicate it is qualitatively real) may be represented by many hits, a grouping process is undertaken to select a single representative hit.
+The representative hit has the largest ['score'](https://github.com/MydonSolutions/seticore/blob/ce15906a10afe8705b5d9893d5a8affa1149b99d/dedoppler_hit.cpp#L40-49) of all the hits found within a ['margin'](https://github.com/MydonSolutions/seticore/blob/ce15906a10afe8705b5d9893d5a8affa1149b99d/dedoppler_hit_group.cpp#L36-64).
+The representative hits are further screened against drift-rate rules (exposed at the CLI).
+The `.stamps` file holds the stamps made from each group-representative hit that has relevant a drift-rate.
+
 # Operation
 
 ## Idiosyncrasies
@@ -107,3 +121,26 @@ The signal search kernel is provided by [seticore](https://github.com/lacker/set
 Direct-IO opened RAW files must be read in whole multiples of 512 bytes. This imposes a lower limit on the upchannelisation rate relative to the sample byte-size of the file: `upchannelisation_rate_lower_limit = 512 / (num_coarse_channel_ingest * num_pol * 2 * num_bits)`. For an 8-bit RAW file (2 bytes per complex sample), the lower limit of upchannelisation is 128, if the coarse-channel ingest rate is 1.
 
 As the pipeline begins with upchannelisation which produces a single fine-spectrum at a time, small upchannelisation rates infer many copies of relatively small amounts of data, leading to inefficiencies. As can be inferred from the above, another factor of the ingest datasize, asides from the upchannelisation rate, is the coarse-channel ingest rate parameter. The coarse-channel ingest rate can be used to increase the data-rate and possibly mitigate some inefficiency when performing low upchannelisation operations.
+
+## Optimsations
+
+Optimal employment of BLADE hinges on understanding the underlying processes. Insider summative tips follow.
+
+**GUPPI RAW Ingest**
+
+The library used to ingest GUPPI RAW is [guppirawc99](https://github.com/MydonSolutions/guppirawc99). It enables iteration through the RAW data in arbitrary steps. As its [benchmarks show](https://github.com/MydonSolutions/guppirawc99#benchmarks), however, ingesting less than a RAW block's time-span of samples greatly reduces the achievable throughput.
+
+The "upchannelisation rate" CLI argument directly determines how many timesamples are ingested at a time.
+
+**BLADE's Beamformer**
+
+The beamformer kernel for BLADE is optimised for data-shapes with greater number of spectra.
+
+The "number of fine-spectra" CLI argument directly determines how many spectra the beamformer operates on at a time.
+
+**seticore's Dedoppler Search**
+
+For a worthwhile signal search to be conducted, at least 10 spectra should be provided.
+
+The "number of fine-spectra" CLI argument directly determines how many spectra the seticore search operates on at a time.
+
