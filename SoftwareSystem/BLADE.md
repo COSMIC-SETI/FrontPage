@@ -19,7 +19,7 @@ A specification of upchannelisation rate (`Tu`), coarse channel ingest rate (`Fc
 
 - Ingest `Tu` coarse-spectra of `Fc` channels
 - Upchannelise `Tu` coarse-spectra, gathering `T` fine-spectra
-- Beamform `T` fine-spectra
+- Beamform `T` fine-spectra (using the time-stamp of the first spectrum to calculate phasors)
 - Search `T` fine-spectra
 
 Further arguments are exposed to control the dedoppler search:
@@ -77,18 +77,20 @@ Coarse-channel offset | This requirement is a consequence of processing subbands
 
 ## Beamformation Calculation
 
+Note that the beamformation computes phasors once per input as each input is accompanied by a scalar time-stamp.
+
 The ATA phasor module internally calculates delays for the antenna from their positions relative to the coordinates of the beams being formed.
 The delays are calculated from a UVW transformation achieved by using ERFA's `eraApco13`, `eraAtciq` and `eraAtioq` methods (effecting the `eraAtco13` method) to produce hour angle and declination values for each beam. They are also made relative to phase-center and to the reference antenna. The required values are as follows:
 
-Value (Units) | Source (Units)
+Value (Units) | Source (Units) | Notes
 -|-
-LLA (radians, radians, metres) | BFR5 (radians, radians, metres)
-Antenna Positions (LLA-relative metres) | BFR5 (ECEF (standardised ingest))
-Time (Modified JD) | Fine-spectra Metadata (Modified JD)
-DUT1 (seconds) | Fine-spectra Metadata (seconds)
-Phase-center (radians, radians) | BFR5 (radians, radians)
-Beam Coordinates (radians, radians) | BFR5 (radians, radians)
-Reference Antenna Index | 0
+LLA (radians, radians, metres) | BFR5 (radians, radians, metres) |
+Antenna Positions (LLA-relative metres) | BFR5 (ECEF (standardised ingest)) |
+Time (Modified JD) | Fine-spectra Metadata (Modified JD) | This is a scalar value for all the input spectra, typically the average time of each spectra.
+DUT1 (seconds) | Fine-spectra Metadata (seconds) |
+Phase-center (radians, radians) | BFR5 (radians, radians) |
+Beam Coordinates (radians, radians) | BFR5 (radians, radians) |
+Reference Antenna Index | 0 |
 
 Thereafter the beams' phasors are calculated for each antenna-channel based on the channel's middle-frequency and the antenna-beam delay:
 
@@ -136,7 +138,7 @@ The "upchannelisation rate" CLI argument directly determines how many timesample
 
 The beamformer kernel for BLADE is optimised for data-shapes with greater number of spectra.
 
-The "number of fine-spectra" CLI argument directly determines how many spectra the beamformer operates on at a time.
+The "number of fine-spectra" CLI argument directly determines how many spectra the beamformer operates on at a time. But, as per the note in the [Beamformation Section](#beamformation-calculation), the phasors are calculated for one time-stamp across all the input spectra.
 
 **seticore's Dedoppler Search**
 
