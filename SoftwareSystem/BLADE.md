@@ -2,8 +2,8 @@
 
 Beam-formation at the VLA is accomplished with the [BLADE](https://github.com/MydonSolutions/blade/tree/0.7-cli-seticore) command-line program.
 
-BLADE is primarily a framework for DSP pipelines. The kernels used for each module of the arverarching pipeline can have different implementations: one "phasor" kernel may require delays as an input while another might internally calculate these from antenna positions and beamforming coordinates. 
-BLADE's exposed pipelines are static arrangments of its modules to achieve certain ends. The pipelines are referred to via a telescope-mode pair. BLADE's beamforming pipeline that the VLA uses is mode BS of telescope ATA. Mode BS refers to Beamform-Search, while the telescope is ATA as the phasor module was developed for the ATA.
+BLADE is primarily a framework for DSP pipelines. The kernels used for each module of the overarching pipeline can have different implementations: for example one "phasor" kernel may require delays as an input while another might internally calculate these from antenna positions and beamforming coordinates. 
+BLADE's exposed pipelines are static arrangments of its modules to achieve certain ends. The pipelines are referred to via a telescope-mode pair. BLADE's beamforming pipeline that the VLA uses is mode _BS_ of telescope _ATA_. Mode _BS_ refers to Beamform-Search, while the telescope is _ATA_ because the phasor module was developed for the ATA.
 
 # Beamformation Pipeline
 
@@ -45,12 +45,12 @@ Dataset | Units | Notes
 /telinfo/altitude | metres | Provides reference position to translate to ECEF coordinates if necessary.
 /telinfo/antenna_positions | metres | These must be in the order of the RAW antenna data as no re-ordering is currently applied.
 /telinfo/antenna_position_frame | {'ecef', 'enu', 'xyz'} | 'xyz' value indicates that the positions are relative to the LLA. If not 'ecef', provided positions are converted to the ECEF frame.
-/obsinfo/phase_center_ra | radians | Provides phase-center coordinate.
-/obsinfo/phase_center_dec | radians | Provides phase-center coordinate.
-/calinfo/cal_all | | Provides calibration coeffecients wich are applied as factors to the phasor-cooffecients calculated to perform the beamforming.
+/obsinfo/phase_center_ra | radians | Provides phase-center Right Ascension ordinate.
+/obsinfo/phase_center_dec | radians | Provides phase-center Declination ordinate.
+/calinfo/cal_all | | Provides complex-valued calibration coefficients which are applied to the beamforming phasors.
 /beaminfo/src_names | | Names for each beam to be formed.
-/beaminfo/ras | radians | Coordinates for each beam to be formed.
-/beaminfo/decs | radians | Coordinates for each beam to be formed.
+/beaminfo/ras | radians | Righ ascension ordinates for each beam to be formed.
+/beaminfo/decs | radians | Declination ordinates for each beam to be formed.
 
 ### GUPPI RAW File
 
@@ -60,8 +60,8 @@ Data | Header key(s) | Notes
 -|-|-
 Delta against UT1 | DUT1 |
 Channel Bandwidth | CHAN_BW | This is the bandwidth of the recorded channels.
-F-Engine Number of Channels | FECHAN | This is the number of channels in the observation (not in the recording).
-Recording Starting Channel | SCHAN | This is the sub-band offset for the recording within the observation.
+F-Engine Number of Channels | FECHAN | This is the number of channels formed in the F-Engine (a subset of which are in the recording).
+Recording Starting Channel | SCHAN | This is the channel index of the first frequency channel (of FECHAN total) for the recording.
 Observation center frequency | `OBSFREQ + (- NCHAN/2 - SCHAN + FENCHAN/2)*CHAN_BW` | This is the center of the observation's frequency (L.O. frequency), not that of the recording. It is used by the phasor module to determine the fringe frequency (first channel frequency of the observation). OBSFREQ is also to be the center-frequency of the middle most recorded channel. 
 Start Unix Epoch-Seconds | `SYNCTIME + ((NTIME * 1.0/CHAN_BW) / PIPERBLK) * PKTIDX` | This is the starting julian-date of the recording. The phasor uses the middle of each RAW block in the calculation of the delays.
 
