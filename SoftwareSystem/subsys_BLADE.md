@@ -118,6 +118,8 @@ The `.stamps` file holds the stamps made from each group-representative hit that
 
 # Operation
 
+A minor overview of the data-flow is given [here](./subsys_BLADE_BS_dataflow.md).
+
 ## Idiosyncrasies
 
 Direct-IO opened RAW files must be read in whole multiples of 512 bytes. This imposes a lower limit on the upchannelisation rate relative to the sample byte-size of the file: `upchannelisation_rate_lower_limit = 512 / (num_coarse_channel_ingest * num_pol * 2 * num_bits)`. For an 8-bit RAW file (2 bytes per complex sample), the lower limit of upchannelisation is 128, if the coarse-channel ingest rate is 1.

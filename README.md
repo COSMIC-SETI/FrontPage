@@ -5,7 +5,7 @@ Welcome to the COSMIC-VLA wiki!
 * [Gantt Chart](https://drive.google.com/file/d/14QTlJbZEkx8_5qUNgs0EAgyQtQoeBEgK/view?usp=sharing)
 * [Roadmap planning](https://docs.google.com/document/d/1nDtOfW71EruebsAeaTjjUV2HyhS5Rfpo4atIe5qpj1Y/edit#heading=h.dc9xlo2irlap)
 * [Change Log](https://docs.google.com/spreadsheets/d/19PUhLtoywIaozQi-byDJI83Ps2QncOS2EjfxDlQ9dk8/edit?usp=sharing)
-* [Software Overview](./SoftwareSystem/index.md)
+* [Software Overview](./SoftwareSystem/README.md)
 
 ## Technical memos:
 * [VLASS Search Specs](https://docs.google.com/document/d/1nkqZMf7MsKGVg0uA8HHg7nyPqBiHngm1F1yP_t-DxFc/edit?usp=sharing)
