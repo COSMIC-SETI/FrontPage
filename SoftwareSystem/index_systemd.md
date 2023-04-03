@@ -9,9 +9,11 @@ Systemd Service | Configuration File | Description
 [mcast2redis](https://github.com/COSMIC-SETI/Cosmic-VLA-RedisPub/blob/main/systemd-services/mcast2redis.service) | | Gather VLA mcast xml information and populate COSMIC files and redis hashes, channels.
 [flaggedantenna](https://github.com/COSMIC-SETI/Cosmic-VLA-RedisPub/blob/main/systemd-services/flaggedantenna.service) | | Poll VLA antenna-flags server and populate COSMIC redis hash.
 [hashpipe_meta_marshall](https://github.com/COSMIC-SETI/Cosmic-VLA-RedisPub/blob/main/systemd-services/hashpipe_meta_marshall.service) | | Poll VLA antenna-flags server and populate COSMIC redis hash.
-vlass_phase_center_controller | | Set phase-center to boresight for non-OTF scans and to the running slewed position for OTF scans.
+[phase_center_controller](https://github.com/COSMIC-SETI/COSMIC-VLA-PythonLibs/blob/main/systemd-services/phase_center_controller.service) | | Set phase-center to boresight for non-OTF scans and to the running slewed position for OTF scans.
 [hashpipe_monitor](https://github.com/MydonSolutions/atapipelinemonitor/blob/vla_cosmic/systemd-services/hashpipe_monitor.service) | | Serve an HTML dashboard of the hashpipe status-buffers for all instances, on port 8081.
 vla_metakey_monitor | | Serve an HTML dashboard of the redis hashes.
+[target_selector](https://github.com/COSMIC-SETI/targets-minimal/blob/cosmic/systemd_service/target_selector.service) | `/home/cosmic/conf/targetselector_mysql_conf.yml` | Serve target coordinates at which to beamform.
+
 
 ## `cosmic-gpu-*` Node Services
 
