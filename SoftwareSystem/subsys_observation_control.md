@@ -49,4 +49,4 @@ The VLASS observation operation includes synthetic beam formation on targets of 
 
 ## Service Details
 
-This `target_selector` service is instantiated as a systemd service on the `cosmic-head` node.
+This `target_selector` service is instantiated as a systemd service on the `cosmic-head` node. It executes under the `/opt/virtualenv/targets/` virtual environment.
