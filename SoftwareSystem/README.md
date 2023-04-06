@@ -13,3 +13,4 @@ The COSMIC system is setup to search for signals in data beamformed from upchann
 
 - [Redis](./index_redis.md)
 - [Systemd Services](./index_systemd.md)
+- [Slack Bot](./index_slackbot.md)
