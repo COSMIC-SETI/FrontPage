@@ -15,7 +15,7 @@ BLADE's exposed pipelines are static arrangments of its modules to achieve certa
 
 Issuing `blade-cli -t ATA --help` will produce explicit usage information and should be the prioritised source for this information.
 
-A specification of upchannelisation rate (`Tu`), coarse channel ingest rate (`Fc`) and fine-spectra beamform-search rate (`T`) determines the data shape that flows through the pipeline:
+A specification of upchannelisation rate (`Tu`), coarse channel ingest rate (`Fc`) and fine-spectra beamform-search rate (`T`) determines the data shape that flows through the pipeline. The latter two arguments should be adjusted to achieve optimal performance, increasing both values increases how much data is processed at a time and on average leads to better performance (prioritise the fine-spectra rate). The dataflow is coarsely described in terms of these three parameters:
 
 - Ingest `Tu` coarse-spectra of `Fc` channels
 - Upchannelise `Tu` coarse-spectra, gathering `T` fine-spectra
