@@ -7,7 +7,7 @@ The COSMIC system is setup to search for signals in data beamformed from upchann
 - [Data acquisition and post-processing](./subsys_data_acquisition.md)
 - [Delay tracking system](https://github.com/COSMIC-SETI/COSMIC-VLA-DelayEngine#readme)
 - [Beamform-search pipeline](./subsys_BLADE.md)
-- Data archival
+- [Data archival](./subsys_data_archival.md)
 
 # Indices
 
