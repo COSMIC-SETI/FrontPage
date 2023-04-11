@@ -12,7 +12,14 @@ mysql -u root -p
 SHOW DATABASES;
 DROP DATABASE cosmic_observations;
 CREATE DATABASE cosmic_observations;
+
+CREATE USER 'cosmic'@'localhost' IDENTIFIED BY '******';
+GRANT ALL PRIVILEGES ON cosmic_observations.* TO 'cosmic'@'localhost' WITH GRANT OPTION
+CREATE USER 'cosmic'@'%' IDENTIFIED BY '******';
+GRANT ALL PRIVILEGES ON cosmic_observations.* TO 'cosmic'@'%' WITH GRANT OPTION
 ```
+
+Change bind-address value to `0.0.0.0` in `sudo nano /etc/mysql/mysql.conf.d/mysqld.cnf` and `sudo systemctl restart mysql`.
 
 </details>
 
