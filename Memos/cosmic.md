@@ -7,7 +7,7 @@ COSMIC is fed by a copy of the digitized data streams transmitted from each VLA 
 The COSMIC DSP pipeline searches VLA data for narrowband (~1 Hz) signals which may be drifting in frequency over time.
 A high-level depiction of COSMIC processing steps is shown below.
 
-![cosmic_dataflow](./_figures/COSMIC_Dataflow.png)
+![cosmic\_dataflow](./_figures/COSMIC_Dataflow.png)
 *A high-level representation of data flow in the COSMIC system.
 Digitized data streams from each VLA antenna are amplified and split, with one copy feeding the COSMIC DSP pipeline and the other feeding WIDAR.
 The COSMIC frontend DSP pipeline channelizes (using FPGAs) data streams to 1 MHz resolution, and then distributes channels over multiple backend DSP pipelines (implemented on CPU/GPUs).
