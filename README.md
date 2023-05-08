@@ -8,18 +8,16 @@ Welcome to the COSMIC-VLA wiki!
 * [Software Overview](./SoftwareSystem/README.md)
 
 ## Technical memos:
-* [VLASS Search Specs](https://docs.google.com/document/d/1nkqZMf7MsKGVg0uA8HHg7nyPqBiHngm1F1yP_t-DxFc/edit?usp=sharing)
+* [VLASS Search Specs](./Memos/VLASS_Search_Pipeline_Specs.pdf)
 * [COSMIC weekly meeting minutes](https://docs.google.com/document/d/1n4c8C7agsP-IJm5UEjiFZ4XCRolCnSUMZqB_bs5TNK8/edit?usp=sharing) (limited access)
-* [COSMIC GPU design memo](https://docs.google.com/document/d/1Gsjts7yBKOXvuVtMFjaWW5IVB7knOvnaDZvB71SYYa0/edit)
+* [COSMIC GPU design memo](./Memos/GPU_Cluster_Design.pdf)
 * [Data format and flops calculation](https://docs.google.com/spreadsheets/d/1nBg8_RJp51gihRQK03zA6st_9hRyWhyO-QC6rQ72_Ns/edit#gid=0)
-* [Metadata collection with mcast](https://docs.google.com/document/d/1-JNBLu0shSc37QVmYsgGC8zLYKIW3eoW6-BmuoSIi5U/edit)
+* [Metadata collection with mcast](./Memos/VLA_Mcast.pdf)
 * [COSMIC DSP flowchart](https://drive.google.com/file/d/1uvJGjCCOi-rpOVnLSkC_L1pJtnS2vnZ5/view)
-* [BLADE ATA mode-BS Dataflow](./SoftwareSystem/BLADE_BS_dataflow.md)
+* [BLADE ATA mode-BS Dataflow](./SoftwareSystem/subsys_BLADE_BS_dataflow.md)
 
 ## Commissioning Notes
 * [Testing BLADE using ATA](https://github.com/MydonSolutions/blade/blob/blade-cli-vla/tests/apps/blade-cli/manual.md#primary-sky-data-test)
-
-## Previous presentations: 
 
 ## COSMIC paper publications:
 * [MRI2021-2022 main description](https://drive.google.com/file/d/1HAF9AT9CL8ye8EIYFT2CmGkzXPzcN9TY/view?usp=sharing)
