@@ -9,8 +9,4 @@ A high-level depiction of COSMIC processing steps is shown below.
 
 |![cosmic\_dataflow](./_figures/COSMIC_Dataflow.png)|
 |:--:|
-|*A high-level representation of data flow in the COSMIC system.
-Digitized data streams from each VLA antenna are amplified and split, with one copy feeding the COSMIC DSP pipeline and the other feeding WIDAR.
-The COSMIC frontend DSP pipeline channelizes (using FPGAs) data streams to 1 MHz resolution, and then distributes channels over multiple backend DSP pipelines (implemented on CPU/GPUs).
-Backend pipelines further channelize to ~1 Hz resolution, and search for narrowband drifting signals.
-When signals are detected, the per-antenna, 1 Hz voltages are archived around the time-frequency extent of the detected signal.*|
+| *A high-level representation of data flow in the COSMIC system. Digitized data streams from each VLA antenna are amplified and split, with one copy feeding the COSMIC DSP pipeline and the other feeding WIDAR. The COSMIC frontend DSP pipeline channelizes (using FPGAs) data streams to 1 MHz resolution, and then distributes channels over multiple backend DSP pipelines (implemented on CPU/GPUs). Backend pipelines further channelize to ~1 Hz resolution, and search for narrowband drifting signals. When signals are detected, the per-antenna, 1 Hz voltages are archived around the time-frequency extent of the detected signal.* |
