@@ -36,6 +36,7 @@ All but the latter are formally owned by the National Radio Astronomy Observator
 All optical hardware was sourced from [Fiberstore](http://www.fs.com).
 
 | Manufacturer | Model | Required | Spares |
+| -- | -- | -- | -- | -- |
 | Fiberstore | [M6200-CH2U](https://www.fs.com/products/107371.html) | 28 | 7 |
 | Fiberstore | [M6200-SFPVOA](https://www.fs.com/products/107373.html) | 28 | 7 |
 | Fiberstore | [M6200-25PA](https://www.fs.com/products/107367.html) | 28 | 1 |
