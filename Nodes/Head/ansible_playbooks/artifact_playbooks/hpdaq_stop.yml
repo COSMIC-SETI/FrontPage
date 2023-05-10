@@ -1,0 +1,10 @@
+- name: Stop hpdaq service
+  hosts: "{{ target_hosts|default('cosmicgpu') }}"
+  gather_facts: no
+  # become: yes
+
+  tasks:
+    # - name: Stop hpdaq, redis_gateway, pypeline services
+    - name: Stop hpdaq service
+      shell:
+        cmd: sudo /bin/systemctl stop hpdaq{{ hpdaq_service_suffix|default('') }}

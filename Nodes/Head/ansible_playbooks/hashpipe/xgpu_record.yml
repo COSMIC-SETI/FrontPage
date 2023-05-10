@@ -1,0 +1,22 @@
+- name: Stop hpaq
+  import_playbook: ../artifact_playbooks/hpdaq_stop.yml
+
+- name: Recompile XGPU
+  import_playbook: ../artifact_playbooks/xgpu_recompile.yml
+  vars:
+    ntime: "{{ stream_ntime|default(32768) }}"
+    nfreq: "{{ stream_nfreq|default(32) }}"
+    nant: 32
+
+- name: Recompile hpaq
+  import_playbook: ../artifact_playbooks/hpdaq_recompile.yml
+  vars:
+    payload_reorder: "ATA_PAYLOAD_TRANSPOSE_TFP_DP4A"
+    databuffer_size: "32*{{ stream_nfreq|default(32) }}*{{ stream_ntime|default(32768) }}*2*2"
+
+- import_playbook: ../artifact_playbooks/hpdaq_set_system.yml
+  vars:
+    system: "vla_xgpu"
+
+- name: Start all hpdaq instances
+  import_playbook: ../artifact_playbooks/hpdaq_start.yml

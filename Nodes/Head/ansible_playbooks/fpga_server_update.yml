@@ -1,0 +1,66 @@
+- name: Update the Python repos that empower the FPGA servers
+  hosts: cosmicfpga
+  become: no
+  gather_facts: no
+  
+  tasks:
+    - name: Update vla-dev
+    #   shell:
+    #     cmd: git pull
+    #     chdir: /home/cosmic/src/vla-dev/software/control_sw
+      ansible.builtin.git:
+        repo: "https://github.com/realtimeradio/vla-dev.git"
+        dest: /home/cosmic/src/vla-dev
+        update: yes
+        recursive: yes
+        version: equalization
+        # version: 65c450be5252bb4a82545e93e70842735b5d833f
+
+    
+    # - name: Checkout vla-dev SHA
+    #   shell:
+    #     cmd: git checkout f0739a29fcac0f44fcc838738a9ec6eee3598197
+    #     chdir: /home/cosmic/src/vla-dev
+
+    - name: Update remoteobjects
+      ansible.builtin.git:
+        repo: "https://github.com/MydonSolutions/remoteobjects-py.git"
+        dest: /home/cosmic/src/remoteobjects-py
+        update: yes
+        version: master
+    
+    - name: Install vla-dev/software/control_sw
+      pip:
+        executable: /home/cosmic/py3-venv/bin/pip
+        chdir: /home/cosmic/src/vla-dev/software/control_sw
+        name: .
+
+    - name: Install vla-dev/software/control_remote_sw
+      pip:
+        executable: /home/cosmic/py3-venv/bin/pip
+        chdir: /home/cosmic/src/vla-dev/software/control_remote_sw
+        name: .
+
+    - name: Install vla-dev/software/casperfpga
+      pip:
+        executable: /home/cosmic/py3-venv/bin/pip
+        chdir: /home/cosmic/src/vla-dev/software/casperfpga
+        name: .
+    
+    - name: Install remoteobjects-py
+      pip:
+        executable: /home/cosmic/py3-venv/bin/pip
+        chdir: /home/cosmic/src/remoteobjects-py
+        name: .
+
+- name: Restart the remoteobject services on the FPGA servers
+  hosts: cosmicfpga
+  # become: true
+  gather_facts: no
+  tasks:
+    - name: Restart remoteobjects-server service
+      shell:
+        cmd: sudo /bin/systemctl restart remoteobjects_server
+      # systemd: # doesn't work unless become=true and then password is unnecessary
+      #   state: restarted
+      #   name: remoteobjects_server
