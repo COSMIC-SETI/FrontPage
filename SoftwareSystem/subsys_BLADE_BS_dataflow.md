@@ -1,3 +1,5 @@
+![BLADE ATA CLI Pipeline](./img/BLADE.png)
+
 The below is a walkthrough of how the BLADE ATA mode BS process currently executes.
 
 Symbol | Value
