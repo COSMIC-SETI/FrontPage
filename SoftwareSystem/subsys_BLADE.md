@@ -106,7 +106,7 @@ The phasors are further mutliplied by the antenna-calibration coefficients (sour
 
 ## Dedoppler Search
 
-The signal search kernel is provided by [seticore](https://github.com/lacker/seticore). While BLADE's ATA mode B only forms beams and output filterbank files, ATA mode BS forms beams and uses seticore to search for signals within those beams. The output is a `signals` and `hits` file pair:
+The signal search kernel is provided by [seticore](https://github.com/lacker/seticore). While BLADE's ATA mode B only forms beams and output filterbank files, ATA mode BS forms beams and uses seticore to search for signals within those beams. The search kernel is always run on the full time-range of beamformed-fine-spectra. The output is a `signals` and `hits` file pair:
 
 - `.hits` files hold [data](https://github.com/lacker/seticore/blob/master/hit.capnp) describing the various signals found by the search kernel.
 - `.stamps` files hold multiple stamps of the RAW data that lead to detected signals. The stamp is of upchannelized RAW data (prior to beamformation). Multiple hits may have their source in the same or very close region of the RAW data, so stamps are made of regions ascertained after grouping hits within a given margin.
@@ -141,10 +141,3 @@ The "upchannelisation rate" CLI argument directly determines how many timesample
 The beamformer kernel for BLADE is optimised for data-shapes with greater number of spectra.
 
 The "number of fine-spectra" CLI argument directly determines how many spectra the beamformer operates on at a time. But, as per the note in the [Beamformation Section](#beamformation-calculation), the phasors are calculated for one time-stamp across all the input spectra.
-
-**seticore's Dedoppler Search**
-
-For a worthwhile signal search to be conducted, at least 10 spectra should be provided.
-
-The "number of fine-spectra" CLI argument directly determines how many spectra the seticore search operates on at a time.
-
