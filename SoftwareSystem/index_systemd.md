@@ -14,6 +14,9 @@ vla_metakey_monitor | | Serve an HTML dashboard of the COSMIC configuration redi
 [hashpipe_monitor](https://github.com/MydonSolutions/atapipelinemonitor/blob/vla_cosmic/systemd-services/hashpipe_monitor.service) | | Serve an HTML dashboard of the hashpipe status-buffers for all instances, on port 8082.
 vla_metakey_monitor | | Serve an HTML dashboard of the redis hashes.
 [target_selector](https://github.com/COSMIC-SETI/targets-minimal/blob/cosmic/systemd_service/target_selector.service) | `/home/cosmic/conf/targetselector_mysql_conf.yml` | Serve target coordinates at which to beamform.
+[delaymodel](https://github.com/COSMIC-SETI/COSMIC-VLA-DelayEngine/blob/main/systemd-services/delaymodel.service) | | Listen for phase-center updates from target selector and serve delay coefficients to F-Engines for delay tracking.
+[calibration_gain_collator](https://github.com/COSMIC-SETI/COSMIC-VLA-DelayEngine/blob/main/systemd-services/calibration_gain_collator.service) | | Listen for calibration gain results from GPU nodes, derive calibration phases and delays and instruct F-Engines to load them.
+[delaylogger](https://github.com/COSMIC-SETI/COSMIC-VLA-DelayEngine/blob/main/systemd-services/delaylogger.service) | | Analyse delay state of F-Engines, log to file and publish results to Redis.
 
 
 ## `cosmic-gpu-*` Node Services
