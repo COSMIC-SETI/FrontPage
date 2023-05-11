@@ -13,7 +13,7 @@ Symbol | Value
 `A` | Number of Antenna
 `B` | Number of Beams
 `Bs` | Number of Beams to search
-`P` | Number of Polarties
+`P` | Number of Polarities
 `S` | Number of bytes per complex sample
 
 - A.1) Ingest `Fc` coarse-channels of enough timesamples (`Tu`) to produce 1 fine-spectrum.
@@ -32,7 +32,7 @@ Symbol | Value
   - Dimensionality (Slowest->Fastest): A,F,T,P
 
 - A.4) Beamform `T` fine-spectra and detect producing {Beams=`B`, Freq=`Tu*Fc`, Time=`T`, Polarity=`1`}.
-  - ***Use the average time-stamp of the fine-spectrum to calculate phasors with dimension of {Antenna=`A`, Freq=`Tu*Fc`, Time=1, Polarity=`P`}***
+  - ***Use the average time-stamp of the fine-spectra to calculate phasors with dimension of {Antenna=`A`, Freq=`Tu*Fc`, Time=1, Polarity=`P`}***
   - Data is transferred within VRAM
   - RAM usage: `0` bytes, VRAM usage: `B*F*T*P*S` Bytes
   - Dimensionality (Slowest->Fastest): B,T,P,F
