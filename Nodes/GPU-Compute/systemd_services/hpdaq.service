@@ -8,11 +8,12 @@ StartLimitIntervalSec=0
 EnvironmentFile=/home/cosmic/hpdaq_service.conf
 Restart=on-failure
 Type=forking
-ExecStart=/home/cosmic/dev/hpguppi_daq/src/init_hpguppi.py $INSTANCE_SYSTEM_NAME 0,1 --configfile /home/cosmic/dev/hpguppi_daq/src/config_hpguppi.yml
+ExecStart=/home/cosmic/src/hpguppi_daq/src/init_hpguppi.py $INSTANCE_SYSTEM_NAME 0,1 --configfile /home/cosmic/src/hpguppi_daq/src/config_hpguppi.yml
 ExecStartPost=/usr/local/bin/hashpipe_redis_gateway.rb -s redishost -i 0,1 &
-ExecStopPost=/home/cosmic/dev/hpguppi_daq/src/init_hpguppi.py vla_ibv 0,1 --delete --configfile /home/cosmic/dev/hpguppi_daq/src/config_hpguppi.yml
+ExecStopPost=/home/cosmic/src/hpguppi_daq/src/init_hpguppi.py vla_ibv 0,1 --delete --configfile /home/cosmic/src/hpguppi_daq/src/config_hpguppi.yml
 StandardOutput=append:/var/log/init_hpguppi.log
 StandardError=append:/var/log/init_hpguppi.log
+TimeoutStopSec=5
 
 [Install]
 WantedBy=multi-user.target
