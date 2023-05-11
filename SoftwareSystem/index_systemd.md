@@ -17,6 +17,10 @@ vla_metakey_monitor | | Serve an HTML dashboard of the redis hashes.
 [delaymodel](https://github.com/COSMIC-SETI/COSMIC-VLA-DelayEngine/blob/main/systemd-services/delaymodel.service) | | Listen for phase-center updates from target selector and serve delay coefficients to F-Engines for delay tracking.
 [calibration_gain_collator](https://github.com/COSMIC-SETI/COSMIC-VLA-DelayEngine/blob/main/systemd-services/calibration_gain_collator.service) | | Listen for calibration gain results from GPU nodes, derive calibration phases and delays and instruct F-Engines to load them.
 [delaylogger](https://github.com/COSMIC-SETI/COSMIC-VLA-DelayEngine/blob/main/systemd-services/delaylogger.service) | | Analyse delay state of F-Engines, log to file and publish results to Redis.
+grafana-server.service | | Grafana dashboard services.
+prometheus.service | /home/cosmic/src/prometheus-2.37.5.linux-amd64/prometheus_cosmic.yml | The headnode fetching service that monitors prometheus exporter endpoints.
+node_exporter.service | | Exports the headnode compute details to an endpoint for prometheus service.
+systemdexporter.service | | Exports the state of all systemd services to an endpoint for prometheus service.
 
 
 ## `cosmic-gpu-*` Node Services
