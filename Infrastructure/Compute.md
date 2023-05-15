@@ -20,8 +20,8 @@ cosmic-pdu-2 | 28:29:86:6b:ca:fd | 10.80.253.232/24 |SETI Rack #3
 cosmic-pdu-3 | 28:29:86:6b:c3:58 | 10.80.253.233/24 |SETI Rack #4
 cosmic-pdu-4 | 28:29:86:6b:c3:86 | 10.80.253.234/24 |SETI Rack #5
 cosmic-pdu-5 | 28:29:86:6b:ca:33 | 10.80.253.235/24 |SETI Rack #6
-cosmic-pdu-6 | TBC | 10.80.254.236 | SETI Rack #7, Note 1
-cosmic-pdu-7 | TBC | 10.80.254.237 | SETI Rack #8, Note 1
+cosmic-pdu-6 | 28:29:86:6b:ca:fb | 10.80.254.236/24 |SETI Rack #7
+cosmic-pdu-7 | 28:29:86:6b:c3:74 | 10.80.254.237/24 |SETI Rack #8
 cosmic-pdu-8 | TBC | 10.80.254.238 | SETI Rack #9, Note 1
 cosmic-pdu-9 | TBC | 10.80.254.239 | SETI Rack #10, Note 1
 
@@ -77,14 +77,20 @@ cosmic-gpu-14 | 7c:c2:55:14:ee:96 | 192.168.32.124 | GPU host, Rack #6
 cosmic-gpu-15 | 3c:ec:ef:f3:7e:64 | 192.168.32.125 | GPU host, Rack #6
 cosmic-gpu-16 | 3c:ec:ef:f3:7f:f6 | 192.168.32.126 | GPU host, Rack #6
 cosmic-gpu-17 | 7c:c2:55:14:ef:7c | 192.168.32.127 | GPU host, Rack #6
+cosmic-gpu-18 | 3c:ec:ef:f2:40:16 | 192.168.32.128 | GPU host, Rack #7
+cosmic-gpu-19 | 3c:ec:ef:f2:40:08 | 192.168.32.129 | GPU host, Rack #7
+cosmic-gpu-20 | 3c:ec:ef:f2:43:1c | 192.168.32.130 | GPU host, Rack #7
+cosmic-gpu-21 | 3c:ec:ef:f2:40:5a | 192.168.32.131 | GPU host, Rack #8
+cosmic-gpu-22 | 3c:ec:ef:f2:3e:f4 | 192.168.32.132 | GPU host, Rack #8
+cosmic-gpu-23 | 3c:ec:ef:f2:40:64 | 192.168.32.133 | GPU host, Rack #8
 cosmic-1g-switch-0 | 10:4f:58:bd:6c:e0 | 192.168.33.30 | 1 GbE switch, SETI Rack #1
 cosmic-1g-switch-1 | 10:4f:58:bd:4c:e0 | 192.168.33.31 | 1 GbE switch, SETI Rack #2
 cosmic-1g-switch-2 | 9c:a2:f4:75:d9:cf | 192.168.33.32 | 1 GbE switch, SETI Rack #3
 cosmic-1g-switch-3 | 1c:61:b4:19:38:ba | 192.168.33.33 | 1 GbE switch, SETI Rack #4
 cosmic-1g-switch-4 | 1c:61:b4:19:3d:0c | 192.168.33.34 | 1 GbE switch, SETI Rack #5
 cosmic-1g-switch-5 | 1c:61:b4:19:38:b8 | 192.168.33.35 | 1 GbE switch, SETI Rack #6
-cosmic-1g-switch-6 | TBC | 192.168.33.36 | 1 GbE switch, SETI Rack #7, Note 1
-cosmic-1g-switch-7 | TBC | 192.168.33.37 | 1 GbE switch, SETI Rack #8, Note 1
+cosmic-1g-switch-6 | 1c:61:b4:19:39:e2 | 192.168.33.36 | 1 GbE switch, SETI Rack #7
+cosmic-1g-switch-7 | 1c:61:b4:19:3d:ef | 192.168.33.37 | 1 GbE switch, SETI Rack #8
 cosmic-1g-switch-8 | TBC | 192.168.33.38 | 1 GbE switch, SETI Rack #9, Note 1
 cosmic-1g-switch-9 | TBC | 192.168.33.39 | 1 GbE switch, SETI Rack #10, Note 1
 cosmic-fpga-0-ipmi | a0:42:3f:3f:6f:90 | 192.168.33.100 | FPGA host server IPMI, Rack #1
@@ -110,6 +116,12 @@ cosmic-gpu-14-ipmi | 3c:ec:ef:ac:81:29 | 192.168.33.124 | GPU host IPMI, Rack #6
 cosmic-gpu-15-ipmi | 3c:ec:ef:33:0e:67 | 192.168.33.125 | GPU host IPMI, Rack #6
 cosmic-gpu-16-ipmi | 3c:ec:ef:33:0e:26 | 192.168.33.126 | GPU host IPMI, Rack #6
 cosmic-gpu-17-ipmi | 3c:ec:ef:33:03:48 | 192.168.33.127 | GPU host IPMI, Rack #6
+cosmic-gpu-18-ipmi | 3c:ec:ef:33:ed:37 | 192.168.33.128 | GPU host IPMI, Rack #7
+cosmic-gpu-19-ipmi | 3c:ec:ef:33:eb:62 | 192.168.33.129 | GPU host IPMI, Rack #7
+cosmic-gpu-20-ipmi | 3c:ec:ef:33:5d:05 | 192.168.33.130 | GPU host IPMI, Rack #7
+cosmic-gpu-21-ipmi | 3c:ec:ef:33:05:71 | 192.168.33.131 | GPU host IPMI, Rack #8
+cosmic-gpu-22-ipmi | 3c:ec:ef:2f:a7:19 | 192.168.33.132 | GPU host IPMI, Rack #8
+cosmic-gpu-23-ipmi | 3c:ec:ef:33:ed:44 | 192.168.33.133 | GPU host IPMI, Rack #8
 
 Note 1: Not yet installed  
 
