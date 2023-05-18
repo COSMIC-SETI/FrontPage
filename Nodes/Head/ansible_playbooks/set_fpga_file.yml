@@ -1,0 +1,15 @@
+- name: Rewrite INITIAL_FPGA_FILEPATH in /home/cosmic/remoteobjects_server.conf
+  hosts: cosmicfpga
+  become: no
+  gather_facts: no
+  vars_prompt:
+    - name: "fpgfilepath"
+      prompt: "Enter the vla-dev relative fpg-filepath:"
+      private: no
+  
+  tasks:
+      - lineinfile:
+          dest: /home/cosmic/remoteobjects_server.conf
+          state: present
+          regexp: '^INITIAL_FPGA_FILEPATH=/home/cosmic/src/vla-dev/.*'
+          line: 'INITIAL_FPGA_FILEPATH=/home/cosmic/src/vla-dev/{{ fpgfilepath }}'

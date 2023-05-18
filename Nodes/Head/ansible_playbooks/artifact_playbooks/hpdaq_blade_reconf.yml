@@ -1,0 +1,46 @@
+- name: Reconfigure Hpguppi's BLADE at /home/sonata/src/hpguppi/src
+  hosts: seti-node4
+  gather_facts: no
+  become: yes
+  vars_prompt:
+    - name: "number_of_beams"
+      prompt: "How many beams to produce"
+      default: "8"
+      private: no
+    - name: "number_of_complex_bytes"
+      prompt: "How many bytes per complex output (4=CF16, 8=CF32)"
+      default: "4"
+      private: no
+    - name: "channelizer_rate"
+      prompt: "Channelizer rate [1=Disabled, 4]"
+      default: "4"
+      private: no
+  
+  tasks:
+    - name: Define BLADE_ATA_MODE_B_OUTPUT_NBEAM as '{{ number_of_beams }}' in hpguppi_blade_ata_mode_b_config.h
+      lineinfile:
+          dest: /home/sonata/src/hpguppi_daq/src/hpguppi_blade_ata_mode_b_config.h
+          state: present
+          regexp: '^#define BLADE_ATA_MODE_B_OUTPUT_NBEAM.*'
+          line: '#define BLADE_ATA_MODE_B_OUTPUT_NBEAM {{ number_of_beams }}'
+
+    - name: Define BLADE_ATA_MODE_B_OUTPUT_NCOMPLEX_BYTES as '{{ number_of_complex_bytes }}' in hpguppi_blade_ata_mode_b_config.h
+      lineinfile:
+          dest: /home/sonata/src/hpguppi_daq/src/hpguppi_blade_ata_mode_b_config.h
+          state: present
+          regexp: '^#define BLADE_ATA_MODE_B_OUTPUT_NCOMPLEX_BYTES.*'
+          line: '#define BLADE_ATA_MODE_B_OUTPUT_NCOMPLEX_BYTES {{ number_of_complex_bytes }}'
+
+    - name: Define BLADE_ATA_MODE_B_CHANNELIZER_RATE as '{{ channelizer_rate }}' in hpguppi_blade_ata_mode_b_config.h
+      lineinfile:
+          dest: /home/sonata/src/hpguppi_daq/src/hpguppi_blade_ata_mode_b_config.h
+          state: present
+          regexp: '^#define BLADE_ATA_MODE_B_CHANNELIZER_RATE.*'
+          line: '#define BLADE_ATA_MODE_B_CHANNELIZER_RATE {{ channelizer_rate }} // [1, 4]; <= 1 mitigates the channlisation'
+
+    - name: Define BLADE_ATA_MODE_B_OUTPUT_MEMCPY2D_PAD as '{{ memcpy2d_pad }}' in hpguppi_blade_ata_mode_b_config.h
+      lineinfile:
+          dest: /home/sonata/src/hpguppi_daq/src/hpguppi_blade_ata_mode_b_config.h
+          state: present
+          regexp: '^#define BLADE_ATA_MODE_B_OUTPUT_MEMCPY2D_PAD.*'
+          line: '#define BLADE_ATA_MODE_B_OUTPUT_MEMCPY2D_PAD {{ memcpy2d_pad }} // zero makes memcpy2D effectively 1D'

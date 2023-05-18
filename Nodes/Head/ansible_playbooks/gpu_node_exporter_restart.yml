@@ -1,0 +1,11 @@
+- name: Restart the node-exporter service on the GPU servers
+  hosts: cosmicgpu
+  # become: true
+  gather_facts: no
+  tasks:
+    - name: Restart the node_exporter.service
+      shell:
+        cmd: sudo /bin/systemctl start node_exporter.service
+      # systemd: # doesn't work unless become=true and then password is unnecessary
+      #   state: restarted
+      #   name: remoteobjects_server
