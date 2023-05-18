@@ -7,6 +7,16 @@ Welcome to the COSMIC-VLA wiki!
 * [Change Log](https://docs.google.com/spreadsheets/d/19PUhLtoywIaozQi-byDJI83Ps2QncOS2EjfxDlQ9dk8/edit?usp=sharing)
 * [Software Overview](./SoftwareSystem/README.md)
 
+## Useful Dashboards:
+
+* Redis Hash Monitor -- http://cosmic-head:8081
+* VLA Pipeline Monitor -- http://cosmic-head:8082
+* Grafana -- http://cosmic-head:3000
+* (For Admins) Prometheus -- http://cosmic-head:9090
+* (For Admins) Influxdb -- http://cosmic-head:8086
+* (For Admins) CloudBeaver (MySQL viewer) -- http://cosmic-head:8079
+* (For Admins) HihgPoint NVMe RAID Management -- http://cosmic-gpu-X:7402
+
 ## Technical memos:
 * [VLASS Search Specs](./Memos/VLASS_Search_Pipeline_Specs.pdf)
 * [COSMIC weekly meeting minutes](https://docs.google.com/document/d/1n4c8C7agsP-IJm5UEjiFZ4XCRolCnSUMZqB_bs5TNK8/edit?usp=sharing) (limited access)
