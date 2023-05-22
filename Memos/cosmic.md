@@ -33,17 +33,69 @@ To the greatest extent possible, all hardware used in COSMIC is off-the-shelf.
 The optical frontend of COSMIC comprises optical Erbium-Doped Fiber Amplifliers (EDFAs), optical splitters, patch panels, and Dense Wavelength-Division Multiplexing (DWDM) demultiplexers.
 All but the latter are formally owned by the National Radio Astronomy Observatory (NRAO).
 
+NRAO hardware accomodates 35 antennas (i.e. 28 antennas + 7 spares). SETI Institute hardware accomodates 30 antennas (i.e. 28 antennas + 2 spares)
+
 All optical hardware was sourced from [Fiberstore](http://www.fs.com).
 
-| Manufacturer | Model | Required | Spares |
-| -- | -- | -- | -- | -- |
-| Fiberstore | [M6200-CH2U](https://www.fs.com/products/107371.html) | 28 | 7 |
-| Fiberstore | [M6200-SFPVOA](https://www.fs.com/products/107373.html) | 28 | 7 |
-| Fiberstore | [M6200-25PA](https://www.fs.com/products/107367.html) | 28 | 1 |
 
 |![cosmic\_fiber](./_figures/COSMIC_Fiber.png)|
 |:--:|
 | *The COSMIC optical frontend. NRAO-owned equipment is shown in blue. SETI-Institute-owned equipent is shown in red.* |
+
+NRAO-owned components are:
+
+
+| Manufacturer | Description | Model | Required | Spares |
+| -- | -- | -- | -- | -- |
+| Fiberstore | 2U Amplifier Chassis | [M6200-CH2U](https://www.fs.com/products/107371.html) | 4 | 1 |
+| Fiberstore | Variable Optical Attenuator | [M6200-SFPVOA](https://www.fs.com/products/107373.html) | 28 | 7 |
+| Fiberstore | Amplifier | [M6200-25PA](https://www.fs.com/products/107367.html) | 28 | 7 |
+
+
+SETI Institute owned components:
+
+| Manufacturer | Description | Model | Required | Spares |
+| -- | -- | -- | -- | -- |
+| Fiberstore | 1U FMU Chassis | [FMU-1UFMX-N](https://www.fs.com/products/30408.html) | 15 | 1 |
+| Fiberstore | DWDM Demux | 12DWDM-SF | 28 | 2 |
+| Fiberstore | LC-MTP cables | 146834 | 84 | 6 |
+| Fiberstore | 40GBASE-PLR4 QSFP+ | [QSFP-PIR4-40G](https://www.fs.com/products/48276.html) | 84 | 21 |
+
+
+#### DWDM Dumux
+
+COSMIC Demuxes are built to order to support ITU DWDM channels C21, C23, C25, C27, C29, C31, C33, C35, C37, C39, C41, C43.
+They are packaged in FMU modules, and provide only demultiplex (no multiplex) capability.
+Two DWDM demultiplexers are hosted in a 1U dual-FMU chassis.
+Originally, the project procured 30 demux units configured for standard 100GHz-separated DWDM channels.
+These have a specified passband of +/- 0.11 nm.
+During commissioning, it was observer that some antennas were transmitting at wavelengths which had significantly drifted from their expected centers, and these were emerging from the demux units with very low power. More recently (March 2023) 4 units were obtained with 200 GHz channel separation, and +/-25nm passbands.
+These "wideband" demux units have been shown to work successfully with the previously problematic antenna transmitters.
+
+#### LC / MTP cables
+
+The COSMIC demux units output data over 12 fibers, configured as 6 duplex LC/UPC connectors.
+For each antenna connection, these 12 fibers are interfaced with 3 QSFP+ transceivers via MTP connectors.
+While off-the-shelf duplex LC - MTP fiber cables are available, the COSMIC system is unusual in that it only utilizes the receive-side of the QSFP+ transceivers, and customized cables which connect only the relevant MTP fibers have been procured for COSMIC.
+These have the following specification:
+
+ - Connector A: MTP Female APC 0.35dB
+ - Connector B: 2 x LC/UPC Duplex
+ - Breakout Length: 0.3 m equal breakout
+ - Breakout Leg: 2.0 mm
+ - Polarity: MTP Type A
+ - Length: 4m
+ - Cable Jacket: LSZH
+ - Fiber Count: 4 Fibers (MTP fibers 1,2,3,4 only)
+ - Fiber type: OS2
+
+#### QSFP+ transceivers
+
+COSMIC uses 40GBASE-PLR4 transceivers to interface VLA fibers with FPGAs.
+These transceivers are designed to service 40Gb/s Ethernet links up to 10km in reach.
+While the transceivers are designed to operate with 1310 nm lasers, practical experience has shown that they will also operate effectively with 1550 nm carriers.
+The parts used by COSMIC have a stated receiver sensitivity (at 1310 nm) of -14.4 dBm, and lab tests have shown bit error rates better than 1 in 10^13 with -19dBm 1550 nm inputs.
+
 
 ### FPGAs
 
