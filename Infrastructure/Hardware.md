@@ -54,7 +54,7 @@ Each server comprises:
 There are 10 COSMIC racks currently energized.
 These are formed of a row of 7 racks, and a row of 3 racks.
 Racks face each other, with a central "cold aisle".
-Rack 8, 9, 10 are opposite racks 7, 6, 5, respectively, separated by 48 inches.
+Rack 8, 9, 10 are opposite racks 5, 6, 7, respectively, separated by 48 inches.
 
 ### Racks 1 - 7
 
