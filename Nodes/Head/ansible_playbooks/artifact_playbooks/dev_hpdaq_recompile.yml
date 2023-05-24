@@ -1,0 +1,25 @@
+- name: Recompile hpguppi_daq at /home/cosmic/dev/hpguppi_daq/src
+  hosts: cosmic-gpu-0
+  # become: yes
+  gather_facts: no
+  
+  tasks:
+    - name: Define ATA_PAYLOAD_TRANSPOSE as '{{ payload_reorder }}'
+      lineinfile:
+        dest: /home/cosmic/dev/hpguppi_daq/src/hpguppi_atasnap.h
+        state: present
+        regexp: '^#define ATA_PAYLOAD_TRANSPOSE.*'
+        line: '#define ATA_PAYLOAD_TRANSPOSE {{ payload_reorder }}'
+
+    - name: Define Databuffer size as as '{{ databuffer_size }}'
+      lineinfile:
+        dest: /home/cosmic/dev/hpguppi_daq/src/hpguppi_databuf.h
+        state: present
+        regexp: '^#define BLOCK_DATA_SIZE.*'
+        line: '#define BLOCK_DATA_SIZE ((long){{ databuffer_size }}) // in bytes'
+      when: databuffer_size is defined
+
+    - name: Recompile Hpguppi_daq
+      shell: 
+          chdir: /home/cosmic/dev/hpguppi_daq/src
+          cmd: make

@@ -1,0 +1,11 @@
+- name: Restart the remoteobject services on the FPGA servers
+  hosts: cosmicfpga
+  # become: true
+  gather_facts: no
+  tasks:
+    - name: Restart remoteobjects-server service
+      shell:
+        cmd: sudo /bin/systemctl restart remoteobjects_server
+      # systemd: # doesn't work unless become=true and then password is unnecessary
+      #   state: restarted
+      #   name: remoteobjects_server
