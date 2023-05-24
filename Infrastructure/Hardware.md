@@ -1,13 +1,15 @@
 # COSMIC Hardware
 
-## DTS Optical Hardware
+## Hardware Specifications
+
+### DTS Optical Hardware
 
 - 5 x Fiberstore M6500-CH2U 7-slot 2U EDFA Chassus 
 - 35 x Fiberstore M6200-25PA 25dB Gain DWDM EDFA
 - 35 x Fiberstore M6200-SFPVOA Variable Optical Attenuator
 - 28 x 12-channel DWDM demultiplexer
 
-## FPGAs
+### FPGA Servers
 
 - 3 x Tyan B7119F77V10E4HR-2T55-N 4U server
 
@@ -18,11 +20,11 @@ Each server comprises:
 - 5 x Alpha Data ADM-PCIE-9H7 FPGA card
 - 10 x Alpha Data AD-PCIE-FQSFP quad-port QSFP28 adapter
 
-## 100G Switches
+### 100G Switches
 
 - 2 x Cisco N9K-C9364C 64-port 100GbE Switch
 
-## CPU/GPU Compute
+### CPU/GPU Compute
 
 - 16 x Supermicro 4124GS-TNR 4U GPU server
 
@@ -35,7 +37,7 @@ Each server comprises:
 - 16 x 1TB Samsung 980 Pro NVMe
 - 6 x PNY RTX A4000 GPU
 
-## Storage
+### Storage
 
 - 2 x Supermicro 6049P-E1CR36L 4U Storage Server
 
@@ -46,3 +48,5 @@ Each server comprises:
 - 36 x 16TB Seagate Exos X18 Enterprise HDD
 - 1 x Mellanox MCX516A-CDAT dual-port 100GbE NIC
 - Broadcom MegaRAID 9560-8i RAID card (inc. battery backup)
+
+## Rack Layout
