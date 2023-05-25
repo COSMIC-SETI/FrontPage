@@ -246,7 +246,7 @@ pip install .
 
 3. Start server service on boot:
 
-    1. Create service environment file, which should point to the firmware image you wish the FPGAs to be programmed with at boot. **This _must_ be compatible with the boot image loaded to the FPGA's flash memory.
+    1. Create service environment file, which should point to the firmware image you wish the FPGAs to be programmed with at boot. **This _must_ be compatible with the boot image loaded to the FPGA's flash memory.**
 
     ```
     echo "INITIAL_FPGA_FILEPATH=/home/cosmic/src/vla-dev/firmware/adm_pcie_9h7_dts_dual_4x100g_dsp_8b/outputs/adm_pcie_9h7_dts_dual_4x100g_dsp_8b_2023-02-01_2054.fpg" > /home/cosmic/remoteobjects_server.conf
