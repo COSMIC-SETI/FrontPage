@@ -2,8 +2,8 @@
 
 ## Introduction
 
-COSMIC (The _Commensal, Open-Source, Multi-mode Interferometer Cluster_) is a real-time digital signal processing system, implemented on a cluster of Field Programmable Gate Arrays (FPGAs) and off-the-shelf GNU/Linux servers accelerated by GPU cards.
-COSMIC is fed by a copy of the digitized data streams transmitted from each VLA antenna, such that the system can operate concurrantly with the VLA facility correlator, WIDAR.
+COSMIC (The _Commensal, Open-Source, Multi-mode Interferometer Cluster_) is a real-time digital signal processing system at the VLA, implemented on a cluster of Field Programmable Gate Arrays (FPGAs) and off-the-shelf GNU/Linux servers accelerated by GPU cards.
+COSMIC is fed by a copy of the digitized data streams transmitted from each of the 28 VLA antennas, such that the system can operate concurrantly with the VLA facility correlator, WIDAR.
 The COSMIC DSP pipeline searches VLA data for narrowband (~1 Hz) signals which may be drifting in frequency over time.
 A high-level depiction of COSMIC processing steps is shown below.
 
