@@ -96,10 +96,20 @@ These transceivers are designed to service 40Gb/s Ethernet links up to 10km in r
 While the transceivers are designed to operate with 1310 nm lasers, practical experience has shown that they will also operate effectively with 1550 nm carriers.
 The parts used by COSMIC have a stated receiver sensitivity (at 1310 nm) of -14.4 dBm, and lab tests have shown bit error rates better than 1 in 10^13 with -19dBm 1550 nm inputs.
 
-
 ### FPGAs
 
+COSMIC uses [Xilinx Virtex UltraScale+ VU37P FPGAs](https://www.xilinx.com/products/silicon-devices/fpga/virtex-ultrascale-plus.html) to perform signal processing, integrated into AlphaData's [ADM-PCIE-9H7](https://www.alpha-data.com/dcp/products.php?product=adm-pcie-9h7) PCIe cards.
+
+Each ADM-PCIE-9H7 processes signals from 2 antennas, and the COSMIC system contains 14 ADM-PCIE-9H7 cards plus one spare.
+
+The installation and configuration of these cards in 4U servers is described in (./fpga\_installation.md).
+
 ### CPU/GPU servers
+
+COSMIC uses [Supermicro 4124GS-TNR](https://www.supermicro.com/en/Aplus/system/4U/4124/AS-4124GS-TNR.cfm) servers, hosting GPUs, 100GbE NICs, and deep, fast, NVMe storage buffers.
+These specs of these servers are described in (../Infrastructure/Hardware.md).
+
+The configuration of these servers is described in (./netboot_server_bringup.md).
 
 ### Storage Servers
 

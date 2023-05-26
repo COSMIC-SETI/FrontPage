@@ -7,9 +7,7 @@ Date: 25th May 2023
 
 The COSMIC FPGA subsystem comprises 15 Alpha Data ADM-PCIE-9H7 PCIe FPGA cards,
 hosted in 3 Tyan B7119F77V10E4HR-2T55-N servers.
-These FPGA cards are controlled via PCIe, which requires appropriate configuration
-of supporting software. The configuration of this software, and details of the FPGA
-hardware configuration are describer here.
+The installation of FPGA cards in these servers is described here, alongside instructions for configuring FPGA control software.
 
 ## Hardware
 
