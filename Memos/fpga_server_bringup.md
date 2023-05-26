@@ -345,3 +345,9 @@ Connection mappings are as follows:
 
 
 Note that above, where a QSFP port is connected to four lanes, `w,x,y,z` of a DTS transmitter, fibers `1` and `2` of the LC->MTP cable should be connected to lanes `w` and `x` (in whatever order the duplex LC cable connector permits) and fibers `3` and `4` should be connected to lanes `y` and `z` (in whatever order the duplex LC cable connector permits).
+
+When complete, the system should look something like this (though in this photo the `FF<X>-A` and `FF<X>-C` QSFP ports are not yet  connected):
+
+|![FPGA board installed](./_figures/fpga_server_bringup/fpga-server-cabling.png)|
+|:--:|
+| *Two FPGA servers, with all but 1GbE and `FF<X>-A` and `FF<X>-B` cables installed* |
