@@ -24,6 +24,7 @@ Each server comprises:
  - 6 x 16GB PC4-25600 DDR4-3200MHz Memory
  - 5 x Alpha Data [ADM-PCIE-9H7](https://www.alpha-data.com/product/adm-pcie-9h7/) FPGA card
  - 10 x Alpha Data [AD-PCIE-FQSFP](https://www.alpha-data.com/product/ad-pcie-fqsfp/) quad-port QSFP28 adapter
+ - 1 x 5-port USB PCIe card, model [FS-U7S-Pro](https://www.amazon.com/FebSmart-Header-Build-Self-Powered-Technology-No-FS-U7S-Pro/dp/B081Y4TK5H/ref=psdc_229185_t2_B095J1QPCH?th=1)
 
 |![server](./_figures/fpga_server_bringup/server_views.png)|
 |:--:|
@@ -36,6 +37,11 @@ Each server comprises:
 |![qsfp board](./_figures/fpga_server_bringup/ad-pcie-fqsfp.png)|
 |:--:|
 | *The AD-PCIE-FQSFP quad QSFP28 add-on card* |
+
+|![usb board](./_figures/fpga_server_bringup/usb-card.png)|
+|:--:|
+| *The FS-U7S-Pro USB PCIe card* |
+
 
 ### Connecting FPGA cards to QSFP28 add ons
 
@@ -66,15 +72,27 @@ They are installed in the bellow configuration, such that each FPGA card occupie
 
 |![fpga install](./_figures/fpga_server_bringup/server-annotated.png)|
 |:--:|
-| *The server PCIe slots allocated to FPGA and QSFP cards*|
+| *The server PCIe slots allocated to FPGA and QSFP cards* |
 
 QSFP cards are installed such that the board connected to Firefly ports 0-3 is positioned next to the FPGA card.
 
-#### Power Cable Installation
+When installation is completed, the internals of the server look like this:
+
+|![fpga install](./_figures/fpga_server_bringup/server-cards-installed.png)|
+|:--:|
+| *The server with FPGA and QSFP cards installed* |
+
+### Power Cable Installation
 
 Every ADM-PCIE-9H7 board has an 8-pin standard GPU power connector.
 This should be connected to the power headers on the server motherboard.
 AD-PCIE-QSFP cards *do not* require power connections.
+
+### USB install
+
+For the purposes of programming the FPGAs and monitoring board sensors, each FPGA card has a micro-USB connection.
+These are connected to the FS-U7S-Pro USB PCIe card, which is installed in the server's one remaining PCIe slot.
+Once this card is installed, each FPGA card's USB connection should be connected to the USB card using a standard micro-USB cable.
 
 ## Software
 
@@ -281,3 +299,49 @@ pip install .
     ```
     sudo systemctl enable remoteobjects_server.service
     ```
+
+## Hardware Addressing
+
+For the purposes of communicating with FPGA firmware, a particular card (of the five installed in each server) is identified by PCIe address. For the purposes of using AlphaData's monitor and control software, a particular card is identified by its USB device address. It is not believed to be certain that USB addresses are stable over reboots.
+
+The mapping between FPGA card (numbered left to right, as the boards appear in the above figure) and PCIe / USB address are as follows:
+
+| FPGA Card | PCIe Address | USB Device     |
+|:---------:|:------------:|:--------------:|
+| 0         | 0x3e         | `/dev/ttyACM1` |
+| 1         | 0x43         | `/dev/ttyACM3` |
+| 2         | 0x3d         | `/dev/ttyACM0` |
+| 3         | 0x65         | `/dev/ttyACM2` |
+| 4         | 0x64         | `/dev/ttyACM4` |
+
+## System-Level Connectivity
+
+Each set of FPGA board + 2 quad-QSFP28 add-on cards is responsible for processing data from two VLA antennas.
+
+When viewed from the rear of the server rack, the 12 QSFP28 ports of a board set forms a 3 x 4 grid, numbered as follows:
+
+| D | FF0-D | FF1-D |
+|:-:|:-----:|:-----:|
+| C | FF0-C | FF1-C |
+| B | FF0-B | FF1-B |
+| A | FF0-A | FF1-A |
+
+Connection mappings are as follows:
+
+| QSFP port | Connection | Purpose |
+|:---------:|:----------:|:-------:|
+| A         | Antenna A DTS channels 37,39,41,43 | Antenna A DTS data ingress |
+| B         | Antenna A DTS channels 29,31,33,35 | Antenna A DTS data ingress |
+| C         | Antenna A DTS channels 21,23,25,27 | Antenna A DTS data ingress |
+| D         | `cosmic-100g-switch-0` | Antenna A ``AC`` IF 100GbE F-engine data egress |
+| FF0-A     | Antenna B DTS channels 37,39,41,43 | Antenna B DTS data ingress |
+| FF0-B     | Antenna B DTS channels 29,31,33,35 | Antenna B DTS data ingress |
+| FF0-C     | Antenna B DTS channels 21,23,25,27 | Antenna B DTS data ingress |
+| FF0-D     | `cosmic-100g-switch-0` | Antenna B ``AC`` IF 100GbE F-engine data egress |
+| FF1-A     | `cosmic-100g-switch-1` | Antenna A ``BD`` IF 100GbE F-engine data egress |
+| FF1-B     | Unconnected | |
+| FF1-C     | `cosmic-100g-switch-1` | Antenna B ``BD`` IF 100GbE F-engine data egress |
+| FF1-D     | Unconnected | |
+
+
+Note that above, where a QSFP port is connected to four lanes, `w,x,y,z` of a DTS transmitter, fibers `1` and `2` of the LC->MTP cable should be connected to lanes `w` and `x` (in whatever order the duplex LC cable connector permits) and fibers `3` and `4` should be connected to lanes `y` and `z` (in whatever order the duplex LC cable connector permits).
