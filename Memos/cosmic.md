@@ -102,16 +102,16 @@ COSMIC uses [Xilinx Virtex UltraScale+ VU37P FPGAs](https://www.xilinx.com/produ
 
 Each ADM-PCIE-9H7 processes signals from 2 antennas, and the COSMIC system contains 14 ADM-PCIE-9H7 cards plus one spare.
 
-The installation and configuration of these cards in 4U servers is described in (./fpga\_installation.md).
+The installation and configuration of these cards in 4U servers is described in [fpga_installation](./fpga\_installation.md).
 
 ### CPU/GPU servers
 
 COSMIC uses [Supermicro 4124GS-TNR](https://www.supermicro.com/en/Aplus/system/4U/4124/AS-4124GS-TNR.cfm) servers, hosting GPUs, 100GbE NICs, and deep, fast, NVMe storage buffers.
-These specs of these servers are described in (../Infrastructure/Hardware.md).
+These specs of these servers are described in [Hardware](../Infrastructure/Hardware.md).
 
 Server MAC addresses can be found in the [COSMIC netboot configuration files](https://github.com/COSMIC-SETI/cosmic-netboot/blob/main/group_vars/all/canonical_names.yml)
 
-The configuration of these servers is described in (./netboot_server_bringup.md).
+The configuration of these servers is described in [netboot_server_bringup](./netboot_server_bringup.md).
 
 ### Storage Servers
 
