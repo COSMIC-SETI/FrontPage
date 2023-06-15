@@ -18,6 +18,7 @@ Welcome to the COSMIC-VLA wiki!
 * (For Admins) HihgPoint NVMe RAID Management -- http://cosmic-gpu-X:7402
 
 ## Technical memos:
+* [Top-Level Documentation](./Memos/cosmic.md)
 * [VLASS Search Specs](./Memos/VLASS_Search_Pipeline_Specs.pdf)
 * [COSMIC weekly meeting minutes](https://docs.google.com/document/d/1n4c8C7agsP-IJm5UEjiFZ4XCRolCnSUMZqB_bs5TNK8/edit?usp=sharing) (limited access)
 * [COSMIC GPU design memo](./Memos/GPU_Cluster_Design.pdf)
