@@ -340,3 +340,67 @@ For example:
     ```
     /cosmic-storage-1 /etc/auto.cosmic-storage-1 --timeout=180
     ```
+
+## 100G IP Addressing
+
+A simple script, which runs at boot via `root`'s `crontab`, is used to configure 100G interfaces on the cluster node, based on hostnames.
+
+This script is:
+
+```bash
+#! /bin/bash
+
+BASEIP0="192.168.64."
+BASEIP1="192.168.65."
+declare -A IP_OFFSET
+IP_OFFSET=(["storage"]=10 ["gpu"]=100)
+
+declare -A IF0SD
+IF0SD=(["storage"]="enp175s0f1np1" ["gpu"]="eth2") # GPU servers aren't quite consistent, so these might have different "hardware" names
+declare -A IF1SD
+IF1SD=(["storage"]="enp175s0f0np0" ["gpu"]="eth4") # GPU servers aren't quite consistent, so these might have different "hardware" names
+
+MTU=9000
+
+# Get compute server number
+hostname=`hostname`
+echo "Hostname is $hostname"
+
+# Get server logical number
+# - delimited
+IFS="-"
+read -a strarr <<< "$hostname"
+servernum=${strarr[2]}
+servertype=${strarr[1]}
+
+IP=$((${IP_OFFSET[$servertype]} + $servernum))
+IP0=${BASEIP0}$IP
+IP1=${BASEIP1}$IP
+
+IF0S=${IF0SD[$servertype]}
+IF1S=${IF1SD[$servertype]}
+
+for IF0 in ${IF0S[@]};
+do
+echo "Setting interface $IF0 to $IP0"
+ip addr add ${IP0}/24 dev $IF0
+# Set MTUs
+ip link set mtu $MTU $IF0
+# set NIC params
+ethtool -s $IF0 speed 100000 autoneg off
+# enable interface!
+ip link set $IF0 up
+done
+
+for IF1 in ${IF1S[@]};
+do
+echo "Setting interface $IF1 to $IP1"
+ip addr add ${IP1}/24 dev $IF1
+# Set MTUs
+ip link set mtu $MTU $IF1
+# set NIC params
+ethtool -s $IF1 speed 100000 autoneg off
+# enable interface!
+ip link set $IF1 up
+done
+```
