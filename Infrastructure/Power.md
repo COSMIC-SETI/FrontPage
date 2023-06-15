@@ -136,10 +136,10 @@ Rack Number | PDU Hostname | PDU port | PDU bank | Device | Notes
 7 | `cosmic-pdu-6` | 6 | 1 | `cosmic-gpu-19:R2` | 
 7 | `cosmic-pdu-6` | 7 | 1 | `cosmic-gpu-19:L1` | 
 7 | `cosmic-pdu-6` | 8 | 1 | `cosmic-gpu-19:L2` | 
-7 | `cosmic-pdu-6` | 14 | 2 | `cosmic-gpu-20:R1` | 
-7 | `cosmic-pdu-6` | 15 | 2 | `cosmic-gpu-20:R2` | 
-7 | `cosmic-pdu-6` | 17 | 2 | `cosmic-gpu-20:L1` | 
-7 | `cosmic-pdu-6` | 18 | 2 | `cosmic-gpu-20:L2` | 
+7 | `cosmic-pdu-6` | 13 | 2 | `cosmic-gpu-20:R1` | 
+7 | `cosmic-pdu-6` | 14 | 2 | `cosmic-gpu-20:R2` | 
+7 | `cosmic-pdu-6` | 15 | 2 | `cosmic-gpu-20:L1` | 
+7 | `cosmic-pdu-6` | 17 | 2 | `cosmic-gpu-20:L2` | 
 7 | `cosmic-pdu-6` | 23 | 2 | `cosmic-1g-switch-6` | 
 
 ### Rack 8
