@@ -2,7 +2,7 @@
 
 ## Creating New User Accounts (Head Node only)
 
-1. obtain the `$username` desired by the new user, and a public SSH key
+1. Obtain the `$username` desired by the new user, and a public SSH key
 2. On `cosmic-head`:
 
 ```
