@@ -30,7 +30,7 @@ Welcome to the COSMIC-VLA wiki!
 
 ## Commissioning Notes
 * [Testing BLADE using ATA](https://github.com/MydonSolutions/blade/blob/blade-cli-vla/tests/apps/blade-cli/manual.md#primary-sky-data-test)
-* [COSMIC commissioning](../Memos/Commissioning_COSMIC.pdf)
+* [COSMIC commissioning](./Memos/Commissioning_COSMIC.pdf)
 ## COSMIC paper publications:
 * [MRI2021-2022 main description](https://drive.google.com/file/d/1HAF9AT9CL8ye8EIYFT2CmGkzXPzcN9TY/view?usp=sharing)
 * [Hickish et al, 2019 white paper](https://ui.adsabs.harvard.edu/abs/2019BAAS...51g.269H/abstract) somewhat outdated design
