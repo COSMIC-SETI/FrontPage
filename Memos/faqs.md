@@ -70,3 +70,27 @@ The above indicates a desktop has been started with ID `4`
 vncviewer -via cosmic :4 # Assuming you have an ssh config entry for `cosmic`
 ```
 This will first prompt for an NRAO password, if you are tunneling through the NRAO ssh gateway, and then the VNC password.
+
+## Powering up the System
+
+In the event that the COSMIC system needs to be brought up from a full power down"
+
+1. Power up `cosmic-head`, which can be remotely controlled from the NRAO netowork (eg. via `gygax`)
+   ```
+   # from gygax
+   ipmitool -I lanplus -H cosmic-head-bmc -U ADMIN -P <IPMI-password> power up
+   ```
+2. Once `cosmic-head` is booted, other machines within the cosmic system can be started
+   ```
+   # from cosmic-head
+   # power up storage nodes:
+   for host in cosmic-storage-{1..2}-ipmi; do echo -n "${host}: "; ipmitool -I lanplus -U ADMIN -P <IPMI-password> -H $host power up; done
+   # power up FPGA nodes:
+   for host in cosmic-fpga-{0..2}-ipmi; do echo -n "${host}: "; ipmitool -I lanplus -U ADMIN -P <IPMI-password> -H $host power up; done
+   # power up GPU nodes:
+   for host in cosmic-gpu-{0..23}-ipmi; do echo -n "${host}: "; ipmitool -I lanplus -U ADMIN -P <IPMI-password> -H $host power up; done
+   ```
+3. If necessary, you can check whether a server is powered up with:
+   ```
+   ipmitool -I lanplus -U ADMIN -P <IPMI-password> -H <ipmi hostname> power status
+   ```
