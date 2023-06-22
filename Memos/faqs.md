@@ -4,15 +4,27 @@
 
 1. Obtain the `$username` desired by the new user, and a public SSH key
 2. On `cosmic-head`:
-
-```
-sudo adduser $username
-sudo mkdir ~$username/.ssh
-sudo vim ~$username/.ssh/authorized_keys
-# Paste the public SSH key in this file
-sudo chown $username:$username ~$username/.ssh/authorized_keys
-sudo chmod 600 ~$username/.ssh/authorized_keys
-```
+   ```
+   sudo adduser $username
+   sudo mkdir ~$username/.ssh
+   sudo vim ~$username/.ssh/authorized_keys
+   # Paste the public SSH key in this file
+   sudo chown $username:$username ~$username/.ssh/authorized_keys
+   sudo chmod 600 ~$username/.ssh/authorized_keys
+   ```
+3. If you wish to add the user to the netboot systems as well, on `cosmic-head`:
+   ```
+   # First get the User and group IDs of the account you just created
+   grep $username /etc/passwd
+   # returns something like: username:x:1019:1020:User Name,,,,:/home/username:/bin/bash
+   # In this case, user ID is 1019, and group ID is 1020
+   # Now, enter the netboot filesystem
+   sudo nbroot
+   groupadd -g <group ID> <username>
+   adduser --uid <user ID> --gid <group ID> <username>
+   # If this fails because the user/group ID are already in use, well, that's gonna need to be wrestled into submission :)
+   ```
+   
 
 ## Set up SSH keys
 
@@ -38,37 +50,37 @@ Host cosmic
 
 ### One-time configuration
 1. On `cosmic-head` configure the desktop
-```
-mkdir ~/.vnc
-cp ~jackh/.vnc/xstartup ~/.vnc/
-```
+   ```
+   mkdir ~/.vnc
+   cp ~jackh/.vnc/xstartup ~/.vnc/
+   ```
 
 ### Session startup
 
 1. Start a VNC session
-```
-vncserver -geometry 1700x900 # Or whatever geometry (specified in pixels) you want
-```
-On the first run, you will be prompted to create a password.
+   ```
+   vncserver -geometry 1700x900 # Or whatever geometry (specified in pixels) you want
+   ```
+   On the first run, you will be prompted to create a password.
 
 2. Note the screen number you have been allocated:
-```
-(py3venv) jackh@cosmic-head:~$ vncserver -geometry 1700x900
+   ```
+   (py3venv) jackh@cosmic-head:~$ vncserver -geometry 1700x900
+     
+   New 'cosmic-head:4 (jackh)' desktop at :4 on machine cosmic-head
 
-New 'cosmic-head:4 (jackh)' desktop at :4 on machine cosmic-head
+   Starting applications specified in /home/jackh/.vnc/xstartup
+   Log file is /home/jackh/.vnc/cosmic-head:4.log
 
-Starting applications specified in /home/jackh/.vnc/xstartup
-Log file is /home/jackh/.vnc/cosmic-head:4.log
+   Use xtigervncviewer -SecurityTypes VncAuth -passwd /home/jackh/.vnc/passwd :4 to connect to the VNC server.
+   ```
 
-Use xtigervncviewer -SecurityTypes VncAuth -passwd /home/jackh/.vnc/passwd :4 to connect to the VNC server.
-```
-
-The above indicates a desktop has been started with ID `4`
+   The above indicates a desktop has been started with ID `4`
 
 3. From your local machine, connect to this desktop - you will have to tunnel. On linux:
-```
-vncviewer -via cosmic :4 # Assuming you have an ssh config entry for `cosmic`
-```
+   ```
+   vncviewer -via cosmic :4 # Assuming you have an ssh config entry for `cosmic`
+   ```
 This will first prompt for an NRAO password, if you are tunneling through the NRAO ssh gateway, and then the VNC password.
 
 ## Powering up the System
