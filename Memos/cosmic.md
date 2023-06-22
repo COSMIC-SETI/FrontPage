@@ -129,5 +129,7 @@ The configuration of these servers is described in [netboot_server_bringup](./ne
 
 ### COSMIC Services
 
+See [this list](../SoftwareSystem/index_systemd.md)
+
 
 
