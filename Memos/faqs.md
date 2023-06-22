@@ -92,7 +92,12 @@ In the event that the COSMIC system needs to be brought up from a full power dow
    # from gygax
    ipmitool -I lanplus -H cosmic-head-bmc -U ADMIN -P <IPMI-password> power up
    ```
-2. Once `cosmic-head` is booted, other machines within the cosmic system can be started
+2. Once `cosmic-head` is booted, turn on NAT if the COSMIC network needs internet access
+   ```
+   # on cosmic-head
+   sudo ~cosmic/bin/nat on
+   ```
+4. Once `cosmic-head` is booted, other machines within the cosmic system can be started
    ```
    # from cosmic-head
    # power up storage nodes:
@@ -102,7 +107,7 @@ In the event that the COSMIC system needs to be brought up from a full power dow
    # power up GPU nodes:
    for host in cosmic-gpu-{0..23}-ipmi; do echo -n "${host}: "; ipmitool -I lanplus -U ADMIN -P <IPMI-password> -H $host power up; done
    ```
-3. If necessary, you can check whether a server is powered up with:
+5. If necessary, you can check whether a server is powered up with:
    ```
    ipmitool -I lanplus -U ADMIN -P <IPMI-password> -H <ipmi hostname> power status
-   ```
+   ``` 
