@@ -102,7 +102,7 @@ COSMIC uses [Xilinx Virtex UltraScale+ VU37P FPGAs](https://www.xilinx.com/produ
 
 Each ADM-PCIE-9H7 processes signals from 2 antennas, and the COSMIC system contains 14 ADM-PCIE-9H7 cards plus one spare.
 
-The installation and configuration of these cards in 4U servers is described in [fpga_installation](./fpga\_server\_bringup.md).
+The installation and configuration of these cards in 4U servers is described in [fpga\_server\_bringup.md](./fpga\_server\_bringup.md).
 
 ### CPU/GPU servers
 
