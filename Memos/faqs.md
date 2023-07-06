@@ -111,3 +111,8 @@ In the event that the COSMIC system needs to be brought up from a full power dow
    ```
    ipmitool -I lanplus -U ADMIN -P <IPMI-password> -H <ipmi hostname> power status
    ``` 
+
+## Remapping Antenna to F-Engines
+
+There is one file that states the relationship between VLA antenna and COSMIC F-Engine Pipeline: `/home/cosmic/conf/antenna_fengine_mapping.yaml` on the `cosmic-head` node.
+Updating this is all that is required. Note that the service running on the F-Engine servers has a configuration file that can exclude PCIe devices from being exposed via the service (by the PCIE_IGNORE value).
