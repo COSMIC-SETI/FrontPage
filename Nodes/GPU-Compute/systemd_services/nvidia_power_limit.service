@@ -1,0 +1,11 @@
+[Unit]
+Description=Throttle NVIDIA power limit to 100W
+Requires=sysinit.target
+
+[Service]
+Type=oneshot
+ExecStartPre=/usr/bin/nvidia-smi -pm 1
+ExecStart=/usr/bin/nvidia-smi -pl 100
+
+[Install]
+WantedBy=multi-user.target
