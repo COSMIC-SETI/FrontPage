@@ -64,8 +64,12 @@ Rack Number | PDU Hostname | PDU port | PDU bank | Device | Notes
 2 | `cosmic-pdu-1` | 4 | 1 | `cosmic-gpu-0:R2` | 
 2 | `cosmic-pdu-1` | 5 | 1 | `cosmic-gpu-1:R` | 
 2 | `cosmic-pdu-1` | 6 | 1 | `cosmic-gpu-1:L` | 
+2 | `cosmic-pdu-1` | 9 | 1 | `JBOD-2-1` | 
+2 | `cosmic-pdu-1` | 10 | 1 | `JBOD-2-2` | 
 2 | `cosmic-pdu-1` | 14 | 2 | `cosmic-storage-1:LR` | 
 2 | `cosmic-pdu-1` | 15 | 2 | `cosmic-storage-2:LR` | 
+2 | `cosmic-pdu-1` | 17 | 2 | `JBOD-1-1` | 
+2 | `cosmic-pdu-1` | 18 | 2 | `JBOD-1-2` | 
 2 | `cosmic-pdu-1` | 23 | 2 | `cosmic-1g-switch-1` | 
 
 ### Rack 3
