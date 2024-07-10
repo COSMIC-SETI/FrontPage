@@ -2,10 +2,11 @@
 Description=Primary Hashpipe Instances (0,1)
 After=network.target
 Requires=network.target
-StartLimitIntervalSec=0
+StartLimitIntervalSec=8
+StartLimitBurst=5
 
 [Service]
-EnvironmentFile=/home/cosmic/hpdaq_service.conf
+EnvironmentFile=/home/cosmic/conf/hpdaq_service.conf
 Restart=on-failure
 Type=forking
 ExecStart=/home/cosmic/src/hpguppi_daq/src/init_hpguppi.py $INSTANCE_SYSTEM_NAME 0,1 --configfile /home/cosmic/src/hpguppi_daq/src/config_hpguppi.yml
