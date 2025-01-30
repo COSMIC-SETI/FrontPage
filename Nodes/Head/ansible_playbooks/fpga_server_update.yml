@@ -13,7 +13,7 @@
         dest: /home/cosmic/src/vla-dev
         update: yes
         recursive: yes
-        version: equalization
+        version: master
         # version: 65c450be5252bb4a82545e93e70842735b5d833f
 
     

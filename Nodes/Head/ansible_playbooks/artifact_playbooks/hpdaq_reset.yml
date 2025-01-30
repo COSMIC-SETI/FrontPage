@@ -1,5 +1,0 @@
-- name: Stop Hpguppi_daq
-  import_playbook: ../artifact_playbooks/hpguppi_daq_stop.yml
-
-- name: Start Hpguppi_daq
-  import_playbook: ../artifact_playbooks/hpguppi_daq_start.yml

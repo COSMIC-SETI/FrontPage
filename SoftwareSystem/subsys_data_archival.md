@@ -5,7 +5,7 @@ The COSMIC database [entities](https://github.com/COSMIC-SETI/COSMIC-VLA-Databas
 The database connection is defined at `/home/comsic/conf/cosmic_db_conf.yaml` to be the `cosmic_observations` database in the `mysql` instance running on `cosmic-head`.
 
 <details><summary>Creating the database</summary>
-On the `cosmic-head` node, issue the following.
+On the `cosmic-storage-1` node, issue the following.
 
 ```
 mysql -u root -p
@@ -28,6 +28,13 @@ On the `cosmic-head` node, a CloudBeaver instance is running, exposed on port `8
 
 The administrative user is `cbadmin`, with the same password used to execute ipmi commands on the `cosmic-head` node.
 The typical user account is `cosmic` with the same password as that user on the `cosmic-head` node.
+</details>
+
+<details><summary>Indexing a table's field (for lookup speed-ups)</summary>
+```
+mysql -u root -p
+mysql> ALTER TABLE cosmic_observations.cosmic_observation_hit ADD INDEX tstart_index (tstart);
+```
 </details>
 
 

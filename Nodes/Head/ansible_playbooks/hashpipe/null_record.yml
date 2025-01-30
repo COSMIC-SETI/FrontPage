@@ -1,8 +1,0 @@
-- name: Rewrite INSTANCE_SYSTEM_NAME in /opt/mnt/share/hpguppi_service.conf
-  import_playbook: ../artifact_playbooks/hpdaq_set_system.yml
-  vars:
-    system: "vla_ibv_null"
-    databuffer_size: "120*1024*1024"
-
-- name: Reset all hpdaq instances
-  import_playbook: ../artifact_playbooks/hpdaq_reset.yml

@@ -116,3 +116,66 @@ In the event that the COSMIC system needs to be brought up from a full power dow
 
 There is one file that states the relationship between VLA antenna and COSMIC F-Engine Pipeline: `/home/cosmic/conf/antenna_fengine_mapping.yaml` on the `cosmic-head` node.
 Updating this is all that is required. Note that the service running on the F-Engine servers has a configuration file that can exclude PCIe devices from being exposed via the service (by the PCIE_IGNORE value).
+
+
+## Observation Configuration errors
+
+```
+[2023-09-07 18:40:29,126 - cosmic.observations:ERROR] Execution. Configuration failed: AttributeError("'CosmicFengineRemote' object has no attribute 'tx_disable'")
+Traceback (most recent call last):
+  File "/home/cosmic/anaconda3/envs/cosmic_vla/lib/python3.8/site-packages/cosmic/observations/marshall.py", line 300, in configure_observation
+    antarray_config = obs_conf.configure_antennaArrayExcludingConfigErrors(
+  File "/home/cosmic/anaconda3/envs/cosmic_vla/lib/python3.8/site-packages/cosmic/observations/configure.py", line 437, in configure_antennaArrayExcludingConfigErrors
+    while True:
+  File "/home/cosmic/anaconda3/envs/cosmic_vla/lib/python3.8/site-packages/cosmic/observations/configure.py", line 266, in configure_antennaArray
+    _map_func(
+  File "/home/cosmic/anaconda3/envs/cosmic_vla/lib/python3.8/multiprocessing/pool.py", line 364, in map
+    return self._map_async(func, iterable, mapstar, chunksize).get()
+  File "/home/cosmic/anaconda3/envs/cosmic_vla/lib/python3.8/multiprocessing/pool.py", line 771, in get
+    raise self._value
+  File "/home/cosmic/anaconda3/envs/cosmic_vla/lib/python3.8/multiprocessing/pool.py", line 125, in worker
+    result = (True, func(*args, **kwds))
+  File "/home/cosmic/anaconda3/envs/cosmic_vla/lib/python3.8/multiprocessing/pool.py", line 48, in mapstar
+    return list(map(*args))
+  File "/home/cosmic/anaconda3/envs/cosmic_vla/lib/python3.8/site-packages/cosmic/observations/configure.py", line 267, in <lambda>
+    lambda feng: feng.disable_tx(remobj_capture_logs=capture_logs),
+  File "<string>", line 4, in disable_tx
+  File "/home/cosmic/anaconda3/envs/cosmic_vla/lib/python3.8/site-packages/remoteobjects/client/rest_client.py", line 54, in _post
+    return self._manage_CRUD_request(requests.post, endpoint, data, params, files)
+  File "/home/cosmic/anaconda3/envs/cosmic_vla/lib/python3.8/site-packages/remoteobjects/client/remote_instance.py", line 60, in _manage_CRUD_request
+    return super()._manage_CRUD_request(
+  File "/home/cosmic/anaconda3/envs/cosmic_vla/lib/python3.8/site-packages/remoteobjects/client/remote_object.py", line 104, in _manage_CRUD_request
+    raise RemoteObjectError(
+remoteobjects.client.remote_object.RemoteObjectError: 
+Remote Traceback:
+Traceback (most recent call last):
+  File "/home/cosmic/py3-venv/lib/python3.8/site-packages/remoteobjects/server/endpoints.py", line 289, in post
+    "return": __REMOTE_OBJECT_REGISTRY__.obj_call_method(
+  File "/home/cosmic/py3-venv/lib/python3.8/site-packages/remoteobjects/server/object_registry.py", line 195, in obj_call_method
+    return self._obj_call_method(obj, method_name, method_args_dict)
+  File "/home/cosmic/py3-venv/lib/python3.8/site-packages/remoteobjects/server/object_registry.py", line 122, in _obj_call_method
+    return func(**method_args_dict)
+  File "/home/cosmic/py3-venv/lib/python3.8/site-packages/cosmic_f/cosmic_fengine.py", line 1856, in disable_tx
+    for i, eth in enumerate(self.eths):
+AttributeError: 'CosmicFengine' object has no attribute 'eths'
+Error calling an object's method: `pcie64_0.disable_tx({})`
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/cosmic/anaconda3/envs/cosmic_vla/bin/observe.py", line 222, in <module>
+    antname_feng_dict = {}
+  File "/home/cosmic/anaconda3/envs/cosmic_vla/lib/python3.8/site-packages/cosmic/observations/marshall.py", line 344, in configure_observation
+    self.thread_pool.map(lambda feng: feng.tx_disable(), ant_feng_dict.values())
+  File "/home/cosmic/anaconda3/envs/cosmic_vla/lib/python3.8/multiprocessing/pool.py", line 364, in map
+    return self._map_async(func, iterable, mapstar, chunksize).get()
+  File "/home/cosmic/anaconda3/envs/cosmic_vla/lib/python3.8/multiprocessing/pool.py", line 771, in get
+    raise self._value
+  File "/home/cosmic/anaconda3/envs/cosmic_vla/lib/python3.8/multiprocessing/pool.py", line 125, in worker
+    result = (True, func(*args, **kwds))
+  File "/home/cosmic/anaconda3/envs/cosmic_vla/lib/python3.8/multiprocessing/pool.py", line 48, in mapstar
+    return list(map(*args))
+  File "/home/cosmic/anaconda3/envs/cosmic_vla/lib/python3.8/site-packages/cosmic/observations/marshall.py", line 344, in <lambda>
+    self.thread_pool.map(lambda feng: feng.tx_disable(), ant_feng_dict.values())
+AttributeError: 'CosmicFengineRemote' object has no attribute 'tx_disable'
+```
