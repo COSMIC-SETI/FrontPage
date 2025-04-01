@@ -112,6 +112,16 @@ In the event that the COSMIC system needs to be brought up from a full power dow
    ipmitool -I lanplus -U ADMIN -P <IPMI-password> -H <ipmi hostname> power status
    ``` 
 
+## Manually Starting Hashpipe Instances
+
+From the head-node as `cosmic`:
+
+```
+$ ansible-playbook ~cosmic/dev/COSMIC-VLA-PythonLibs/scripts/ansible_playbooks/hashpipe/voltage_record.yml --become -K
+$ ansible-playbook ~cosmic/dev/COSMIC-VLA-PythonLibs/scripts/ansible_playbooks/hashpipe/xgpu_record.yml -e hpdaq_service_suffix=_secondary --become -K
+$ ansible cosmicgpu -m shell -a "systemctl start pypeline@0 pypeline@1 pypeline@2 pypeline@3" --become -K
+```
+
 ## Remapping Antenna to F-Engines
 
 There is one file that states the relationship between VLA antenna and COSMIC F-Engine Pipeline: `/home/cosmic/conf/antenna_fengine_mapping.yaml` on the `cosmic-head` node.
