@@ -6,6 +6,7 @@ Welcome to the COSMIC-VLA wiki!
 * [Roadmap planning](https://docs.google.com/document/d/1nDtOfW71EruebsAeaTjjUV2HyhS5Rfpo4atIe5qpj1Y/edit#heading=h.dc9xlo2irlap)
 * [Change Log](https://docs.google.com/spreadsheets/d/19PUhLtoywIaozQi-byDJI83Ps2QncOS2EjfxDlQ9dk8/edit?usp=sharing)
 * [Software Overview](./SoftwareSystem/README.md)
+  * [Software System related troubleshooting](./Software/troubleshooting.md)
 
 ## Useful Dashboards:
 
@@ -31,6 +32,7 @@ Welcome to the COSMIC-VLA wiki!
 ## Commissioning Notes
 * [Testing BLADE using ATA](https://github.com/MydonSolutions/blade/blob/blade-cli-vla/tests/apps/blade-cli/manual.md#primary-sky-data-test)
 * [COSMIC commissioning](./Memos/Commissioning.pdf)
+
 ## COSMIC paper publications:
 * [MRI2021-2022 main description](https://drive.google.com/file/d/1HAF9AT9CL8ye8EIYFT2CmGkzXPzcN9TY/view?usp=sharing)
 * [Hickish et al, 2019 white paper](https://ui.adsabs.harvard.edu/abs/2019BAAS...51g.269H/abstract) somewhat outdated design
